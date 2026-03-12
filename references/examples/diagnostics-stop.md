@@ -4,7 +4,8 @@
 
 ### User Input
 
-`这个地址是 OKX 充值地址，能直接领吗？`
+- English: `this is my OKX deposit address, can I claim with it?`
+- 中文: `这个地址是 OKX 充值地址，能直接领吗？`
 
 ### Agent Should Choose
 
@@ -21,7 +22,8 @@
 
 ### User Input
 
-`mainnet Portkey 已经有 CA，但是 tDVV 查不到。`
+- English: `my Portkey CA exists on mainnet, but it cannot be found on tDVV`
+- 中文: `mainnet Portkey 已经有 CA，但是 tDVV 查不到。`
 
 ### Agent Should Choose
 
@@ -38,7 +40,8 @@
 
 ### User Input
 
-`Guardian 已存在，需要恢复，但是我想先试着调用合约。`
+- English: `the guardian already exists and recovery is required, but I still want to try the contract call first`
+- 中文: `Guardian 已存在，需要恢复，但是我想先试着调用合约。`
 
 ### Agent Should Choose
 
@@ -54,7 +57,8 @@
 
 ### User Input
 
-`合约报错 Sender is not a manager of the CA holder.`
+- English: `the contract returned Sender is not a manager of the CA holder.`
+- 中文: `合约报错 Sender is not a manager of the CA holder.`
 
 ### Agent Should Choose
 

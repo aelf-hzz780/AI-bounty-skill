@@ -4,7 +4,8 @@
 
 ### User Input
 
-`帮我 Claim。`
+- English: `help me claim`
+- 中文: `帮我 Claim。`
 
 ### Agent Should Choose
 
@@ -24,7 +25,8 @@
 
 ### User Input
 
-`帮我领取，但我本地还没有账号。`
+- English: `help me claim, but I do not have a local account yet`
+- 中文: `帮我领取，但我本地还没有账号。`
 
 ### Agent Should Choose
 

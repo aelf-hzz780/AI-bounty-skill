@@ -2,7 +2,8 @@
 
 ## User Input
 
-`我选 CA，本地已经创建好了，继续帮我领取。`
+- English: `I choose CA. My local account is ready. Continue the claim.`
+- 中文: `我选 CA，本地已经创建好了，继续帮我领取。`
 
 ## Agent Should Choose
 
@@ -14,7 +15,7 @@
 
 ## Must Not Ask
 
-- `CA` 和 `EOA` 的基础区别已经选定后还重复解释一遍
+- do not re-explain the basic `CA vs EOA` difference after the account type is already chosen
 - whether the reward should go to the manager address
 - irrelevant EOA-only signer questions
 
