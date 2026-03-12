@@ -1,262 +1,133 @@
 ---
 name: ai-bounty-claim
-description: Use when claiming the AI bounty on tDVV through RewardClaimContract. Covers the two supported paths: direct EOA Claim() and Portkey CA ClaimByPortkeyToCa(Hash ca_hash). Explains how to choose the route, prepare the correct signer, validate prerequisites, and interpret claim failures.
+description: Use when claiming the AI bounty on the tDVV mainnet sidechain through RewardClaimContract. First explain the difference between Portkey CA and EOA, recommend CA because the current campaign rewards 2 tokens for CA and 1 token for EOA, then route to account onboarding, Portkey CA claim, EOA claim, or diagnostics-only stop handling.
 ---
 
 # AI Bounty Claim
 
 Use this skill for AI bounty claiming on `tDVV` through `RewardClaimContract`.
 
-This skill covers only the supported claim paths:
+This skill is intentionally split into one routing file plus focused branch references so weaker agents can follow one path at a time.
 
-- EOA path: `Claim()`
-- Portkey CA path: `ClaimByPortkeyToCa(Hash ca_hash)`
+## Scope
 
-Do not use this skill for:
+Supported on-chain methods:
 
-- deprecated `ClaimByPortkey`
-- contract deployment or upgrade work
-- admin operations such as changing the claim window or withdrawing remaining balance
+- `Claim()`
+- `ClaimByPortkeyToCa(Hash ca_hash)`
 
-The preferred execution path is through the dependent Portkey skills.
-The `aelf-command` snippets in this skill are only optional manual fallback examples for environments that already have that CLI installed.
+This skill does not implement:
 
-## Dependencies
+- wallet custody or wallet creation on behalf of the user
+- private key generation, storage, or import on behalf of the user
+- Portkey recovery flows
+- blind retry loops after claim failures
 
-Use these skills as routing dependencies, not as hidden assumptions:
+## Current Environment Defaults
 
-- Portkey CA skill: `https://github.com/Portkey-Wallet/ca-agent-skills/blob/main/SKILL.md`
-- Portkey EOA skill: `https://github.com/Portkey-Wallet/eoa-agent-skills/blob/main/SKILL.md`
+Use these defaults only when the user is clearly operating in the current AI bounty environment:
 
-Use the CA skill when the claim depends on:
-
-- `ca_hash`
-- holder info
-- manager validation
-- claim-to-CA routing
-
-Use the EOA skill when the claim depends on:
-
-- EOA wallet selection
-- active signer context
-- password-protected EOA keystore usage
-- plain address-based `Claim()`
-
-EOA `Claim()` does not require CA tooling by default.
-CA `ClaimByPortkeyToCa()` usually does.
-
-Do not depend on private repository links in public skill distributions.
-
-## Known tDVV Defaults
-
-Use these defaults when the user is clearly operating on the current AI bounty environment:
-
+- Chain: `tDVV`
+- Environment meaning: current AI bounty mainnet sidechain environment
 - Reward contract: `ELF_2fc5uPpboX9K9e9NTiDHxhCcgP8T9nV28BLyK8rDu8JmDpn472_tDVV`
 - Public RPC: `https://tdvv-public-node.aelf.io`
 - Portkey CA contract: `ELF_2UthYi7AHRdfrqc1YCfeQnjdChDLaas65bW4WxESMGMojFiXj9_tDVV`
+- Current campaign default reward: Portkey CA `2 tokens`, EOA `1 token`
 
-Treat these as environment defaults, not immutable constants.
+Treat reward amounts and addresses as campaign defaults, not permanent protocol constants.
 
-## Choose The Claim Path
+## Required First Step
 
-Choose the route before preparing the signer:
+For generic requests like `帮我 Claim` or `帮我领取`, do not jump directly to an on-chain method.
 
-### Use `Claim()`
+The agent must first explain:
 
-Use `Claim()` when:
+- `CA`: account-style experience, typically based on email / guardian / recovery flows, current campaign reward is `2 tokens`
+- `EOA`: traditional wallet experience, typically based on mnemonic / private key, current campaign reward is `1 token`
+- recommendation: choose `CA`
 
-- the user wants to claim directly to a normal EOA address
-- no Portkey CA identity flow is involved
-- no `ca_hash` is available or needed
+Then ask the user which account type they want to use: `CA` or `EOA`.
 
-Important semantics:
+## Routing Rules
 
-- `Claim()` does not require `ca_hash`
-- the receiver is `Context.Sender`
-- the claim state is tracked on the sender address
+Choose one branch before asking for extra claim inputs.
 
-### Use `ClaimByPortkeyToCa(Hash ca_hash)`
+### Branch 1: Account Choice And Onboarding
 
-Use `ClaimByPortkeyToCa()` when:
+Read [references/flows/account-choice.md](./references/flows/account-choice.md) when:
 
-- the user wants the reward credited to a Portkey CA identity
-- the user already has or can retrieve `ca_hash`
-- the sender is a manager of that Portkey holder
+- the user says `帮我 Claim`, `帮我领取`, or another generic claim request
+- the user has not yet chosen between `CA` and `EOA`
+- the user has chosen `CA` or `EOA`, but the local account context is not ready yet
 
-Important semantics:
+### Branch 2: Diagnostics And Stop
 
-- `ClaimByPortkeyToCa()` requires `ca_hash`
-- the receiver is `holderInfo.CaAddress`
-- the claim state is tracked on the CA address, not the manager address
+Read [references/flows/diagnostics-stop.md](./references/flows/diagnostics-stop.md) first when any of the following is true:
 
-Default routing rule:
+- the user tries to fill an exchange address, custodial address, or any address without a user-controlled private key
+- the user wants the agent to create or hold a wallet for them
+- the user says Portkey CA already exists on mainnet but cannot be resolved on `tDVV`
+- the user says the guardian already exists and recovery is required
+- a prior contract call failed and the prerequisite is still unresolved
 
-- if the user only wants a normal address claim, choose `Claim()`
-- if the user mentions CA, holder, manager validation, `ca_hash`, or claim-to-CA, choose `ClaimByPortkeyToCa()`
+### Branch 3: Portkey CA Claim
 
-## EOA `Claim()` Path
+Read [references/flows/portkey-ca.md](./references/flows/portkey-ca.md) when:
 
-### Preconditions
+- the user explicitly chose `CA`
+- a local Portkey CA account is already available
+- the sender is expected to be a Portkey manager signer on `tDVV`
 
-Before sending `Claim()`:
+### Branch 4: EOA Claim
 
-1. Confirm the signer is the intended EOA address.
-2. Confirm the claim contract is currently claimable:
-   `claim_enabled = true`, current time inside the claim window, reward pool still has balance.
-3. Confirm the sender has not already claimed.
-4. Use the EOA skill if you need active wallet resolution or local signer management.
+Read [references/flows/eoa-skill.md](./references/flows/eoa-skill.md) when:
 
-Important operational note:
+- the user explicitly chose `EOA`
+- a local EOA account is already available
+- no CA identity flow is involved
 
-- a queried `ELF` balance of `0` is only a warning; prefer actual chain execution results over wallet-balance heuristics
+## Global Hard Rules
 
-### Correct Send Path
+- Never continue with `Claim()` if the address is exchange-managed, custodial, or lacks a user-controlled private key.
+- Always tell the user not to fill exchange or custodial addresses.
+- Never offer to create, custody, or store a wallet for the user.
+- Do not ask the user to paste an address when a local EOA or local CA context should be used.
+- For generic claim requests, explain `CA vs EOA` first and ask the user to choose one before entering a claim branch.
+- Always recommend `CA` because the current campaign reward is `2 tokens` for `CA` and `1 token` for `EOA`.
+- If the chosen local account context is not ready, guide the user to create the local `CA` or local `EOA` first, then continue with the matching claim branch.
+- Never ask for `ca_hash` in a plain EOA `Claim()` flow.
+- Prefer the locally created EOA address for `Claim()` and the locally created CA account for `ClaimByPortkeyToCa(Hash ca_hash)`.
+- For Portkey CA claims, the transaction sender must be a current manager of the CA holder on `tDVV`; otherwise stop.
+- Before any on-chain write, show the resolved signer, target contract, method, key inputs, expected receiver semantics, and current campaign reward amount, then require explicit user confirmation.
+- If explicit confirmation is missing, stop before sending.
+- If any prerequisite is unresolved, stop and explain the blocker instead of guessing.
+- If a transaction fails, return the exact chain error and stop. Do not invent recovery success.
 
-Preferred path:
+## Receiver Semantics
 
-- use the Portkey EOA skill to resolve the active signer and send the transaction
-- before any write call, show the resolved signer, target contract, method, and expected receiver semantics, then require explicit user confirmation
-- if the user does not explicitly confirm, stop before sending
+- `Claim()` sends the reward to `Context.Sender`.
+- `ClaimByPortkeyToCa(Hash ca_hash)` sends the reward to the resolved CA address, not to the manager signer.
 
-Optional manual fallback:
+## Required Reading Pattern
 
-- use `aelf-command` only if the environment already has it installed and the user explicitly wants a direct CLI call
+After choosing the branch:
 
-Example direct EOA-signed call:
+1. Read the matching flow document under `references/flows/`.
+2. Read the matching example document under `references/examples/`.
+3. Follow that branch only.
+4. Do not mix EOA and CA instructions in one answer.
 
-```bash
-aelf-command send ELF_2fc5uPpboX9K9e9NTiDHxhCcgP8T9nV28BLyK8rDu8JmDpn472_tDVV Claim "" \
-  -a <EOA_ADDRESS> \
-  -p '<EOA_PASSWORD>' \
-  -e 'https://tdvv-public-node.aelf.io'
-```
+## Branch Map
 
-### Expected Success Signals
-
-On success, expect:
-
-- transaction status `MINED`
-- reward contract method `Claim`
-- event `AddressClaimed`
-- event receiver equals the sender address
-
-### Common Failures
-
-- `Address has already claimed.`
-- `Insufficient reward balance.`
-- claim disabled
-- claim window not started or already ended
-
-## Portkey CA `ClaimByPortkeyToCa(Hash ca_hash)` Path
-
-### Required Inputs
-
-- `ca_hash`
-- manager signer that currently belongs to that holder
-
-Do not confuse:
-
-- `ca_hash`: holder identity hash used for the Portkey CA lookup
-- `ca_address`: reward receiver for `ClaimByPortkeyToCa`
-- `manager address`: actual transaction sender
-
-### How To Get `ca_hash`
-
-Preferred order:
-
-1. If the Portkey wallet is already recovered or unlocked locally, read `caHash` from wallet status.
-2. If the user only knows the guardian identifier, query Portkey by identifier and chain.
-3. If you already have a candidate `ca_hash`, verify it through Portkey CA `GetHolderInfo`.
-
-Use the Portkey CA skill for these steps.
-
-### Preconditions
-
-Before sending the final CA claim transaction:
-
-1. Confirm the signer is the intended manager address.
-2. Confirm that manager appears in `manager_infos` for the `ca_hash`.
-3. Confirm the contract is in a claimable state:
-   `claim_enabled = true`, current time inside the claim window, reward pool still has balance.
-4. Confirm `ca_hash` has not already been consumed.
-5. Confirm the CA address has not already completed the Portkey upgrade claim.
-
-### Manager Validation
-
-Use the Portkey CA contract on `tDVV` to confirm the signer before attempting the claim.
-
-Expected condition:
-
-- `GetHolderInfo(ca_hash).manager_infos` contains the transaction sender
-
-If not, stop. The contract will fail with:
-
-- `Sender is not a manager of the CA holder.`
-
-### Correct Send Path
-
-Preferred path:
-
-- use the Portkey CA skill to resolve `ca_hash`, validate the manager signer, and send the transaction directly from that signer
-- before any write call, show the resolved manager signer, `ca_hash`, target contract, method, and expected CA receiver, then require explicit user confirmation
-- if the user does not explicitly confirm, stop before sending
-
-Optional manual fallback:
-
-- use `aelf-command` only if the environment already has it installed and the user explicitly wants a direct CLI call
-
-Example direct manager-signed call to the reward contract:
-
-```bash
-aelf-command send ELF_2fc5uPpboX9K9e9NTiDHxhCcgP8T9nV28BLyK8rDu8JmDpn472_tDVV ClaimByPortkeyToCa "<CA_HASH>" \
-  -a <MANAGER_ADDRESS> \
-  -p '<MANAGER_PASSWORD>' \
-  -e 'https://tdvv-public-node.aelf.io'
-```
-
-For agent-driven flows:
-
-- unlock or select the manager signer through the Portkey CA skill
-- send the reward contract call directly from that manager signer
-- do not wrap it in CA forwarding
-
-### Expected Success Signals
-
-On success, expect:
-
-- transaction status `MINED`
-- reward contract method `ClaimByPortkeyToCa`
-- event `PortkeyClaimedToCa`
-- token `Transferred` event sending the reward to `holderInfo.CaAddress`
-
-### Common Failures
-
-- `CA hash is required.`
-- `Portkey CA contract is not configured.`
-- `CA holder not found.`
-- `Sender is not a manager of the CA holder.`
-- `CA hash has already claimed.`
-- `Address has already completed Portkey upgrade.`
-- `Address has already claimed the maximum reward.`
-- `Insufficient reward balance.`
-- claim disabled or claim window closed
-
-## Recommended Agent Workflow
-
-1. Determine whether the user wants plain EOA claim or Portkey CA claim.
-2. For EOA claim, use the EOA skill to resolve the signer and validate all claim preconditions.
-3. For CA claim, use the CA skill to resolve `ca_hash`, validate manager membership, and validate all claim preconditions.
-4. Before any on-chain write, show the resolved signer, target contract, method, key input values, and expected receiver semantics, then require explicit user confirmation.
-5. Only after explicit confirmation, send `Claim()` or `ClaimByPortkeyToCa()`.
-6. Report the `txid`.
-7. If the call fails, surface the exact chain error and stop.
-
-## Anti-Patterns
-
-- Do not use deprecated `ClaimByPortkey`.
-- Do not ask for `ca_hash` in a plain EOA `Claim()` flow.
-- Do not describe `Claim()` as a Portkey or CA claim path.
-- Do not use EOA receiver semantics to explain `ClaimByPortkeyToCa()`.
-- Do not use CA `ManagerForwardCall` for `ClaimByPortkeyToCa`.
-- Do not assume reward always goes to the manager address.
-- Do not retry the same `ca_hash` after a successful CA claim.
+- Account choice and onboarding:
+  [references/flows/account-choice.md](./references/flows/account-choice.md)
+  Example: [references/examples/account-choice.md](./references/examples/account-choice.md)
+- Portkey CA:
+  [references/flows/portkey-ca.md](./references/flows/portkey-ca.md)
+  Example: [references/examples/portkey-ca.md](./references/examples/portkey-ca.md)
+- EOA:
+  [references/flows/eoa-skill.md](./references/flows/eoa-skill.md)
+  Example: [references/examples/eoa-skill.md](./references/examples/eoa-skill.md)
+- Diagnostics and stop:
+  [references/flows/diagnostics-stop.md](./references/flows/diagnostics-stop.md)
+  Example: [references/examples/diagnostics-stop.md](./references/examples/diagnostics-stop.md)
