@@ -15,10 +15,10 @@
 
 - explain that `Claim()` requires a user-controlled signer
 - explain that an OKX deposit address does not provide the private key
-- tell the user directly not to fill exchange addresses and to use a local EOA address or local recovered CA account instead
+- tell the user directly not to fill exchange addresses and to use a local EOA address or local recovered AA/CA account instead
 - stop without offering wallet creation
 
-## Example 2: Mainnet CA Exists But `tDVV` Fails
+## Example 2: Mainnet AA/CA Exists But `tDVV` Fails
 
 ### User Input
 
@@ -33,7 +33,7 @@
 
 - explain that the bounty flow requires holder and manager resolution on `tDVV`
 - explain that the current prerequisite is not met
-- tell the user to recover or re-establish the Portkey context on `tDVV` first
+- tell the user to recover or re-establish the Portkey AA/CA context on `tDVV` first
 - stop without guessing `ca_hash`
 
 ## Example 3: Guardian Already Exists
@@ -49,7 +49,7 @@
 
 ### Correct Output Shape
 
-- explain that recovery must be completed before the CA claim can be trusted
+- explain that recovery must be completed before the AA/CA claim can be trusted
 - tell the user to finish the recovery flow first
 - stop without calling the contract
 
@@ -67,7 +67,7 @@
 ### Correct Output Shape
 
 - repeat the exact chain error
-- explain that the current signer is not a valid manager on `tDVV`
+- explain that the current signer is not a valid manager for this AA/CA on `tDVV`
 - tell the user to switch to a valid manager signer
 - stop without retrying blindly
 
@@ -105,4 +105,24 @@
 - explain that the final failure reason is insufficient transaction fee
 - explain that this is not an RPC outage and not a claim logic failure
 - for `EOA`, tell the user to get `ELF` transferred in before retrying
-- for `CA`, tell the user to confirm subsidy conditions or add `ELF` if needed
+- for `EOA`, if getting `ELF` is not feasible, recommend switching to `AA/CA`
+- for `AA/CA`, tell the user to confirm subsidy conditions or add `ELF` if needed
+
+## Example 7: View-Only API Misread As Full Method List
+
+### User Input
+
+- English: `contractViewMethodList only shows GetConfig, HasAddressClaimed, and HasCaClaimed, so this reward contract must not have ClaimByPortkeyToCa`
+- 中文: `contractViewMethodList 只返回 GetConfig、HasAddressClaimed、HasCaClaimed，所以这个奖励合约应该没有 ClaimByPortkeyToCa`
+
+### Agent Should Choose
+
+- `Diagnostics And Stop`
+
+### Correct Output Shape
+
+- explain that `/api/contract/contractViewMethodList` is a view-only list and cannot be used to deny write methods
+- explain that seeing only read methods does not prove `Claim()` or `ClaimByPortkeyToCa(Hash ca_hash)` is missing
+- if full method verification is still needed, tell the user to use `/api/blockChain/contractFileDescriptorSet` as an optional verification path
+- explain that node introspection must use the normalized contract address format, not the wrapped `ELF_..._tDVV` address string
+- tell the user to keep the canonical reward contract and supported write methods already defined by the skill unless a verified source disproves them

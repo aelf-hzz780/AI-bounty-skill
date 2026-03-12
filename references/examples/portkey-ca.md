@@ -1,4 +1,4 @@
-# Example: Portkey CA Claim
+# Example: Portkey AA/CA Claim
 
 ## User Input
 
@@ -7,7 +7,7 @@
 
 ## Agent Should Choose
 
-- `Portkey CA Claim`
+- `Portkey AA/CA Claim`
 
 ## Must Ask Or Confirm
 
@@ -15,7 +15,7 @@
 
 ## Must Not Ask
 
-- do not re-explain the basic `CA vs EOA` difference after the account type is already chosen
+- do not re-explain the basic `AA/CA vs EOA` difference after the account type is already chosen
 - whether the reward should go to the manager address
 - irrelevant EOA-only signer questions
 
@@ -23,12 +23,13 @@
 
 - `ca_hash` cannot be resolved on `tDVV`
 - signer is not a current manager
-- CA path has already claimed
+- AA/CA path has already claimed
 - guardian recovery is still pending
 
 ## Correct Output Shape
 
-- identify the branch as Portkey CA
+- identify the branch as Portkey AA/CA
+- explain that user input saying `CA` still maps to the `AA/CA` branch
 - tell the user not to fill exchange addresses
-- show manager signer, `ca_hash`, contract, method, receiver semantics, signer source as local CA account, and `2 AIBOUNTY` current campaign reward
+- show manager signer, `ca_hash`, contract, method, receiver semantics, signer source as local AA/CA account, and `2 AIBOUNTY` current campaign reward
 - ask for explicit confirmation before sending
