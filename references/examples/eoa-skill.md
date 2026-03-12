@@ -30,5 +30,5 @@
 
 - identify the branch as EOA
 - tell the user not to fill exchange addresses
-- show signer, contract, method, receiver semantics, signer source as local EOA account, and `1 token` current campaign reward
+- show signer, contract, method, receiver semantics, signer source as local EOA account, and `1 AIBOUNTY` current campaign reward
 - ask for explicit confirmation before sending

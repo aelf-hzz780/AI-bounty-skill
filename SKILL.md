@@ -1,6 +1,6 @@
 ---
 name: ai-bounty-claim
-description: Use when claiming the AI bounty on the tDVV mainnet sidechain through RewardClaimContract. First explain the difference between Portkey CA and EOA, recommend CA because the current campaign rewards 2 tokens for CA and 1 token for EOA, then route to account onboarding, Portkey CA claim, EOA claim, or diagnostics-only stop handling.
+description: Use when claiming the AI bounty on the tDVV mainnet sidechain through RewardClaimContract. First explain the difference between Portkey CA and EOA, recommend CA because the current campaign rewards 2 AIBOUNTY for CA and 1 AIBOUNTY for EOA, then route to account onboarding, Portkey CA claim, EOA claim, or diagnostics-only stop handling.
 ---
 
 # AI Bounty Claim
@@ -45,7 +45,7 @@ Use these defaults only when the user is clearly operating in the current AI bou
 - Public RPC: `https://tdvv-public-node.aelf.io`
 - RPC validation endpoint: `https://tdvv-public-node.aelf.io/api/blockChain/chainStatus`
 - Portkey CA contract: `ELF_2UthYi7AHRdfrqc1YCfeQnjdChDLaas65bW4WxESMGMojFiXj9_tDVV`
-- Current campaign default reward: Portkey CA `2 tokens`, EOA `1 token`
+- Current campaign default reward: Portkey CA `2 AIBOUNTY`, EOA `1 AIBOUNTY`
 
 Treat reward amounts and addresses as campaign defaults, not permanent protocol constants.
 
@@ -68,8 +68,8 @@ Examples:
 
 The agent must first explain:
 
-- `CA`: account-style experience, typically based on email / guardian / recovery flows, current campaign reward is `2 tokens`
-- `EOA`: traditional wallet experience, typically based on mnemonic / private key, current campaign reward is `1 token`
+- `CA`: account-style experience, typically based on email / guardian / recovery flows, current campaign reward is `2 AIBOUNTY`
+- `EOA`: traditional wallet experience, typically based on mnemonic / private key, current campaign reward is `1 AIBOUNTY`
 - recommendation: choose `CA`
 
 Then ask the user which account type they want to use: `CA` or `EOA`.
@@ -122,7 +122,7 @@ Read [references/flows/eoa-skill.md](./references/flows/eoa-skill.md) when:
 - Never offer to create, custody, or store a wallet for the user.
 - Do not ask the user to paste an address when a local EOA or local CA context should be used.
 - For generic claim requests, explain `CA vs EOA` first and ask the user to choose one before entering a claim branch.
-- Always recommend `CA` because the current campaign reward is `2 tokens` for `CA` and `1 token` for `EOA`.
+- Always recommend `CA` because the current campaign reward is `2 AIBOUNTY` for `CA` and `1 AIBOUNTY` for `EOA`.
 - Explicitly use the Portkey EOA skill for EOA work and the Portkey CA skill for CA work; do not rely on implicit skill discovery.
 - When checking whether the `tDVV` RPC is reachable, query `https://tdvv-public-node.aelf.io/api/blockChain/chainStatus` instead of the site root.
 - If the RPC root URL returns `404` but `/api/blockChain/chainStatus` returns chain status JSON, treat the node as reachable.

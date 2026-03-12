@@ -22,7 +22,7 @@ Use this flow when any of the following is true:
 - Required input: `ca_hash`, preferably resolved from the local CA context
 - Transaction sender: a current manager signer of the target CA holder on `tDVV`
 - Receiver: resolved CA address
-- Current campaign default reward: `2 tokens`
+- Current campaign default reward: `2 AIBOUNTY`
 
 ## Step-By-Step
 
@@ -43,7 +43,7 @@ Use this flow when any of the following is true:
    - method `ClaimByPortkeyToCa(Hash ca_hash)`
    - receiver semantics `reward goes to the CA address`
    - signer source `resolved from local CA account`
-   - expected reward `2 tokens` in the current campaign
+   - expected reward `2 AIBOUNTY` in the current campaign
    - RPC validation endpoint `https://tdvv-public-node.aelf.io/api/blockChain/chainStatus`
 12. Ask for explicit confirmation.
 13. Only after explicit confirmation, send `ClaimByPortkeyToCa(ca_hash)` directly from the manager signer.

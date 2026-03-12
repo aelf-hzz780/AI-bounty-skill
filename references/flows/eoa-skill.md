@@ -21,7 +21,7 @@ Use this flow only when all conditions below are true:
 
 - Method: `Claim()`
 - Receiver: `Context.Sender`
-- Current campaign default reward: `1 token`
+- Current campaign default reward: `1 AIBOUNTY`
 - `ca_hash` is not part of this flow
 
 ## Step-By-Step
@@ -38,7 +38,7 @@ Use this flow only when all conditions below are true:
    - method `Claim()`
    - receiver semantics `reward goes to Context.Sender`
    - source of signer `resolved from local EOA account`
-   - expected reward `1 token` in the current campaign
+   - expected reward `1 AIBOUNTY` in the current campaign
    - RPC validation endpoint `https://tdvv-public-node.aelf.io/api/blockChain/chainStatus`
 8. Ask for explicit confirmation.
 9. Only after explicit confirmation, send `Claim()`.
