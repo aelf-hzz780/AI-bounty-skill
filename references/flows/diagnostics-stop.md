@@ -12,7 +12,6 @@ Use this flow for any blocker that makes the signer or claim path invalid:
 - `/api/blockChain/chainStatus` cannot be reached
 - insufficient transaction fee or no available `ELF`
 - write methods were misread from a view-only contract introspection result
-- AA/CA write was routed through deprecated `ClaimByPortkey` or Portkey CA `ManagerForwardCall` instead of direct `ClaimByPortkeyToCa`
 - a wrapped `ELF_..._tDVV` address was passed into an SDK or helper that expects a raw address
 - `caHash` was encoded as a string or otherwise not encoded as `.aelf.Hash`
 - descriptor-based encoding was attempted without `root.resolveAll()`
@@ -53,12 +52,6 @@ Use this flow for any blocker that makes the signer or claim path invalid:
 - Reason: the chain already returned a concrete failure.
 - Next action: return the exact error and map it to the missing prerequisite.
 - Hard stop: do not retry blindly.
-
-### Wrong AA/CA Write Path
-
-- Reason: the recommended AA/CA path is the reward contract's permissionless `ClaimByPortkeyToCa(Hash ca_hash)`, not deprecated `ClaimByPortkey(Hash)` and not Portkey CA `ManagerForwardCall`.
-- Next action: switch back to the direct reward-contract `ClaimByPortkeyToCa` path and keep only `caHash` validation plus gas readiness checks.
-- Hard stop: do not keep retrying manager-gated AA/CA paths when the recommended method is permissionless.
 
 ### Insufficient Transaction Fee
 
@@ -107,13 +100,13 @@ Use this flow for any blocker that makes the signer or claim path invalid:
 ## AA/CA Troubleshooting Notes
 
 - For AA/CA claims, the gas payer or relayer can be any address, but the reward still goes to the resolved AA/CA address.
+- Do not tell the user that manager identity is the blocker for `ClaimByPortkeyToCa`; focus on `caHash` validity, claim state, fee readiness, and RPC reachability.
 - The `ClaimByPortkeyToCa` input must be `.aelf.Hash`, not `string`.
 - `NOTEXISTED` only means the transaction is not confirmed yet; it is not a final result.
 - A successful direct AA/CA claim often emits `PortkeyClaimedToCa` and `Transferred`. If the request was wrapped through another contract path, additional events may also appear.
 
 ## Error Mapping
 
-- `Sender is not a manager of the CA holder.` -> the request likely went through deprecated `ClaimByPortkey(Hash)` or Portkey CA `ManagerForwardCall` instead of the recommended permissionless `ClaimByPortkeyToCa(Hash)`
 - `CA holder not found.` -> `caHash` is missing or not valid on `tDVV`
 - `Address has already claimed.` -> the EOA path is already consumed
 - `CA hash has already claimed.` -> the AA/CA path is already consumed

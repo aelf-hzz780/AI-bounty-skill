@@ -53,12 +53,12 @@
 - tell the user to finish the recovery flow first
 - stop without calling the contract
 
-## Example 4: Contract Error
+## Example 4: `caHash` Not Found On `tDVV`
 
 ### User Input
 
-- English: `the contract returned Sender is not a manager of the CA holder.`
-- 中文: `合约报错 Sender is not a manager of the CA holder.`
+- English: `the contract returned CA holder not found.`
+- 中文: `合约报错 CA holder not found.`
 
 ### Agent Should Choose
 
@@ -67,9 +67,8 @@
 ### Correct Output Shape
 
 - repeat the exact chain error
-- explain that this error does not belong to the recommended permissionless `ClaimByPortkeyToCa` path
-- explain that the request likely went through deprecated `ClaimByPortkey` or Portkey CA `ManagerForwardCall`
-- tell the user to switch back to direct reward-contract `ClaimByPortkeyToCa(caHash)`
+- explain that the current `caHash` cannot be resolved on `tDVV`
+- tell the user to re-check or re-resolve the target `caHash`
 - stop without retrying blindly
 
 ## Example 5: RPC Root Returns 404
@@ -128,12 +127,12 @@
 - explain that node introspection must use the normalized contract address format, not the wrapped `ELF_..._tDVV` address string
 - tell the user to keep the canonical reward contract and supported write methods already defined by the skill unless a verified source disproves them
 
-## Example 8: ManagerForwardCall Wrapper
+## Example 8: Reward Goes To The Resolved AA/CA
 
 ### User Input
 
-- English: `I used ManagerForwardCall for ClaimByPortkeyToCa. Is that required for AA/CA claims?`
-- 中文: `我用 ManagerForwardCall 去包 ClaimByPortkeyToCa 了。AA/CA 领取一定要这样吗？`
+- English: `if another address pays gas for ClaimByPortkeyToCa, does the reward go to that sender?`
+- 中文: `如果是另一个地址代付 gas 去调用 ClaimByPortkeyToCa，奖励会发给那个发送方吗？`
 
 ### Agent Should Choose
 
@@ -141,10 +140,10 @@
 
 ### Correct Output Shape
 
-- explain that the recommended AA/CA claim path is direct reward-contract `ClaimByPortkeyToCa(Hash ca_hash)`
-- explain that `ManagerForwardCall` is not required for the recommended permissionless flow
-- tell the user to switch back to direct `ClaimByPortkeyToCa(caHash)`
-- stop without recommending another blind retry on the manager-gated wrapper path
+- explain that `ClaimByPortkeyToCa` can be sent by any gas payer or relayer as long as the `caHash` is valid
+- explain that the reward goes to the AA/CA address resolved from that `caHash`, not to the gas payer or relayer
+- tell the user to verify the target `caHash` and claim status instead of focusing on who paid gas
+- stop if the user still cannot provide or resolve the correct `caHash`
 
 ## Example 9: Wrapped Address And Wrong `caHash` Encoding
 

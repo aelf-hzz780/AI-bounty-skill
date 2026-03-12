@@ -68,8 +68,7 @@ Use this flow when any of the following is true:
 17. If the first query result is `NOTEXISTED`, wait briefly and query the transaction again until a final status or a clear timeout is reached; do not treat `NOTEXISTED` as a final result.
 18. Report the `txId`, exact final chain status, and event summary when available.
 19. If the final transaction error is `Transaction fee not enough`, map it to insufficient transaction fee and stop.
-20. If the final transaction error is `Sender is not a manager of the CA holder.`, explain that the request likely went through the wrong execution path such as deprecated `ClaimByPortkey` or CA `ManagerForwardCall`, then stop.
-21. If the transaction fails for another reason, surface the original error and stop.
+20. If the transaction fails for another reason, surface the original error and stop.
 
 ## Must-Stop Conditions
 
