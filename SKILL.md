@@ -1,20 +1,20 @@
 ---
 name: ai-bounty-claim
-version: 2.6.0
-description: Use when claiming the AI bounty on the tDVV mainnet sidechain. First explain the difference between Portkey AA/CA and EOA, recommend AA/CA because the current campaign rewards 2 AIBOUNTY for AA/CA and 1 AIBOUNTY for EOA, then route to account onboarding, Portkey AA/CA claim through CA ManagerForwardCall, EOA claim, or diagnostics-only stop handling.
+version: 2.7.0
+description: Use when claiming the AI bounty on the tDVV mainnet sidechain. First explain the difference between Portkey AA/CA and EOA, recommend AA/CA because the current campaign rewards 2 AIBOUNTY for AA/CA and 1 AIBOUNTY for EOA, then route to account onboarding, Portkey AA/CA claim through permissionless ClaimByPortkeyToCa, EOA claim, or diagnostics-only stop handling.
 ---
 
 # AI Bounty Claim
 
 Use this skill for AI bounty claiming on `tDVV` through `RewardClaimContract`.
 
-For AA/CA, the canonical write path is a forwarded call through the Portkey CA contract. Do not treat AA/CA claiming as a direct manager-signed write to the reward contract.
+For AA/CA, the canonical write path is the reward contract's permissionless `ClaimByPortkeyToCa(Hash ca_hash)`. Do not force the recommended AA/CA path through Portkey CA `ManagerForwardCall`.
 
 This skill is intentionally split into one routing file plus focused branch references so weaker agents can follow one path at a time.
 
 ## Skill Version
 
-- Current skill version: `2.6.0`
+- Current skill version: `2.7.0`
 - If behavior seems inconsistent or an external AI reports unexpected output, ask them to report the `version` field from this `SKILL.md` first.
 
 ## Scope
@@ -22,7 +22,7 @@ This skill is intentionally split into one routing file plus focused branch refe
 Supported claim paths:
 
 - `EOA`: `Claim()`
-- `AA/CA`: `ManagerForwardCall(...) -> ClaimByPortkeyToCa(Hash ca_hash)`
+- `AA/CA`: `ClaimByPortkeyToCa(Hash ca_hash)`
 
 This skill does not implement:
 
@@ -41,7 +41,7 @@ Use these dependency skills explicitly instead of assuming the host will infer t
 Routing rule:
 
 - use the Portkey EOA skill for local EOA account setup, signer resolution, and EOA-side `Claim()`
-- use the Portkey CA skill for local AA/CA account setup, `email -> get-verifier -> send-code -> recover/login` when needed, `caHash` resolution, manager validation, and AA/CA-side `ManagerForwardCall(...) -> ClaimByPortkeyToCa(Hash ca_hash)`
+- use the Portkey CA skill for local AA/CA account setup, `caHash` resolution, and recovery/login only when needed to recover local context or resolve the target AA/CA on `tDVV`
 
 ## Current Environment Defaults
 
@@ -59,13 +59,13 @@ Use these defaults only when the user is clearly operating in the current AI bou
 
 Treat reward amounts and addresses as campaign defaults, not permanent protocol constants.
 
-## Canonical AA/CA Write Path
+## Canonical AA/CA Claim Path
 
-- Never ask the manager signer to call the reward contract directly.
-- Always use `manager signer -> Portkey CA contract ManagerForwardCall -> reward contract ClaimByPortkeyToCa(Hash ca_hash)`.
-- The forwarded reward method input is `.aelf.Hash`; pass `caHash` bytes as `Hash.value`.
-- For SDK or helper calls, use raw CA and reward contract addresses, not wrapped `ELF_..._tDVV` addresses.
-- Prefer the high-level helper `managerForwardCallWithKey(...)` in the dependency implementation. Keep lower-level protobuf and descriptor details in the AA/CA branch reference.
+- Always use the reward contract's permissionless `ClaimByPortkeyToCa(Hash ca_hash)` as the recommended AA/CA path.
+- Any gas payer or relayer can call this method if a valid `caHash` is known.
+- The reward goes to the resolved `holderInfo.CaAddress`, not to the gas payer or relayer.
+- The reward method input is `.aelf.Hash`; pass `caHash` bytes as `Hash.value`.
+- For SDK or helper calls that require raw addresses, use the reward contract raw address. The CA contract address is needed only for holder lookup or `caHash` resolution, not for the write itself.
 
 ## Gas Rules
 
@@ -144,8 +144,7 @@ Read [references/flows/diagnostics-stop.md](./references/flows/diagnostics-stop.
 Read [references/flows/portkey-ca.md](./references/flows/portkey-ca.md) when:
 
 - the user explicitly chose `AA`, `CA`, or `AA/CA`
-- a local Portkey AA/CA account is already available
-- the sender is expected to be a Portkey manager signer on `tDVV`
+- a local Portkey AA/CA account is already available, or the target `caHash` is already known
 - use the Portkey CA skill dependency for AA/CA handling
 
 ### Branch 4: EOA Claim
@@ -175,16 +174,15 @@ Read [references/flows/eoa-skill.md](./references/flows/eoa-skill.md) when:
 - If full method verification is needed, use `/api/blockChain/contractFileDescriptorSet` only as an optional verification path.
 - When using node introspection APIs, normalize the contract address first instead of querying with the wrapped `ELF_..._tDVV` string directly.
 - If introspection remains ambiguous, keep the reward contract address and supported write methods defined in this skill as canonical defaults.
-- For AA/CA SDK calls, use raw CA and reward addresses rather than the wrapped `ELF_..._tDVV` strings.
+- For AA/CA SDK or helper calls that require raw addresses, use the reward raw address, and use the CA raw address only when separately querying holder info or resolving `caHash`.
 - If the chosen local account context is not ready, guide the user to create the local `AA/CA` or local `EOA` first, then continue with the matching claim branch.
 - `NOTEXISTED` only means the transaction is not confirmed yet; it is not a final success or failure state.
 - If the final chain error is `Transaction fee not enough`, treat it as an insufficient transaction fee problem, not as a claim logic failure.
 - Never ask for `ca_hash` in a plain EOA `Claim()` flow.
-- For AA/CA, accept either `email` or `caHash` as the starting input. If only `email` is available, recover or login first to obtain a valid manager signer and AA/CA context on `tDVV`.
-- Prefer the locally created EOA address for `Claim()` and the locally resolved AA/CA context for `ManagerForwardCall(...) -> ClaimByPortkeyToCa(Hash ca_hash)`.
-- For Portkey AA/CA claims, the transaction sender must be a current manager of the CA holder on `tDVV`; otherwise stop.
-- Never send `ClaimByPortkeyToCa(Hash ca_hash)` directly from the manager signer to the reward contract.
-- Before any on-chain write, show the resolved signer, CA contract, forwarded reward contract, method chain, key inputs, expected receiver semantics, and current campaign reward amount, then require explicit user confirmation.
+- For AA/CA, accept either `email` or `caHash` as the starting input. If only `email` is available, use the Portkey CA skill to resolve the target `caHash`, and only fall back to recovery/login when direct resolution is not possible.
+- Prefer the locally created EOA address for `Claim()` and the locally resolved AA/CA target for `ClaimByPortkeyToCa(Hash ca_hash)`.
+- Do not route the recommended AA/CA claim through deprecated `ClaimByPortkey(Hash)` or through Portkey CA `ManagerForwardCall`.
+- Before any on-chain write, show the resolved gas payer or relayer, reward contract, method, key inputs, expected receiver semantics, and current campaign reward amount, then require explicit user confirmation.
 - If explicit confirmation is missing, stop before sending.
 - If any prerequisite is unresolved, stop and explain the blocker instead of guessing.
 - If a transaction fails, return the exact chain error and stop. Do not invent recovery success.
@@ -192,7 +190,7 @@ Read [references/flows/eoa-skill.md](./references/flows/eoa-skill.md) when:
 ## Receiver Semantics
 
 - `Claim()` sends the reward to `Context.Sender`.
-- `ManagerForwardCall(...) -> ClaimByPortkeyToCa(Hash ca_hash)` sends the reward to the resolved AA/CA address, not to the manager signer.
+- `ClaimByPortkeyToCa(Hash ca_hash)` sends the reward to the resolved AA/CA address, not to the gas payer or relayer.
 
 ## Required Reading Pattern
 

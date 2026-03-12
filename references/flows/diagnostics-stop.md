@@ -12,7 +12,7 @@ Use this flow for any blocker that makes the signer or claim path invalid:
 - `/api/blockChain/chainStatus` cannot be reached
 - insufficient transaction fee or no available `ELF`
 - write methods were misread from a view-only contract introspection result
-- AA/CA write was attempted directly against the reward contract instead of through `CA.ManagerForwardCall`
+- AA/CA write was routed through deprecated `ClaimByPortkey` or Portkey CA `ManagerForwardCall` instead of direct `ClaimByPortkeyToCa`
 - a wrapped `ELF_..._tDVV` address was passed into an SDK or helper that expects a raw address
 - `caHash` was encoded as a string or otherwise not encoded as `.aelf.Hash`
 - descriptor-based encoding was attempted without `root.resolveAll()`
@@ -38,13 +38,13 @@ Use this flow for any blocker that makes the signer or claim path invalid:
 
 ### Mainnet AA/CA Exists But `tDVV` Lookup Fails
 
-- Reason: the bounty claim requires holder and manager resolution on `tDVV`, not only on another network view.
+- Reason: the bounty claim requires holder and `caHash` resolution on `tDVV`, not only on another network view.
 - Next action: ask the user to recover or re-establish the Portkey AA/CA context that is queryable on `tDVV`.
 - Hard stop: do not guess or fabricate `caHash`.
 
 ### Guardian Already Exists And Recovery Is Required
 
-- Reason: the user needs the existing AA/CA context and manager relationship before claiming.
+- Reason: the user needs the existing AA/CA context or a resolvable `caHash` before claiming.
 - Next action: ask the user to complete the recovery flow first, then retry the claim path.
 - Hard stop: do not attempt the final claim while recovery is incomplete.
 
@@ -56,9 +56,9 @@ Use this flow for any blocker that makes the signer or claim path invalid:
 
 ### Wrong AA/CA Write Path
 
-- Reason: the AA/CA claim path must use `manager signer -> CA.ManagerForwardCall -> reward.ClaimByPortkeyToCa`, not a direct manager-signed write to the reward contract.
-- Next action: switch back to the canonical forwarded AA/CA path and verify the manager relationship again before retrying.
-- Hard stop: do not keep retrying a direct reward-contract write from the manager signer.
+- Reason: the recommended AA/CA path is the reward contract's permissionless `ClaimByPortkeyToCa(Hash ca_hash)`, not deprecated `ClaimByPortkey(Hash)` and not Portkey CA `ManagerForwardCall`.
+- Next action: switch back to the direct reward-contract `ClaimByPortkeyToCa` path and keep only `caHash` validation plus gas readiness checks.
+- Hard stop: do not keep retrying manager-gated AA/CA paths when the recommended method is permissionless.
 
 ### Insufficient Transaction Fee
 
@@ -106,14 +106,14 @@ Use this flow for any blocker that makes the signer or claim path invalid:
 
 ## AA/CA Troubleshooting Notes
 
-- For AA/CA claims, the manager signer is the transaction sender, but the reward still goes to the resolved AA/CA address.
-- The forwarded reward method input must be `.aelf.Hash`, not `string`.
+- For AA/CA claims, the gas payer or relayer can be any address, but the reward still goes to the resolved AA/CA address.
+- The `ClaimByPortkeyToCa` input must be `.aelf.Hash`, not `string`.
 - `NOTEXISTED` only means the transaction is not confirmed yet; it is not a final result.
-- A successful forwarded AA/CA claim often emits `VirtualTransactionCreated`, `PortkeyClaimedToCa`, and `Transferred`.
+- A successful direct AA/CA claim often emits `PortkeyClaimedToCa` and `Transferred`. If the request was wrapped through another contract path, additional events may also appear.
 
 ## Error Mapping
 
-- `Sender is not a manager of the CA holder.` -> the current signer is not valid for this AA/CA on `tDVV`
+- `Sender is not a manager of the CA holder.` -> the request likely went through deprecated `ClaimByPortkey(Hash)` or Portkey CA `ManagerForwardCall` instead of the recommended permissionless `ClaimByPortkeyToCa(Hash)`
 - `CA holder not found.` -> `caHash` is missing or not valid on `tDVV`
 - `Address has already claimed.` -> the EOA path is already consumed
 - `CA hash has already claimed.` -> the AA/CA path is already consumed

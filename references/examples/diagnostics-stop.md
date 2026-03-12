@@ -31,7 +31,7 @@
 
 ### Correct Output Shape
 
-- explain that the bounty flow requires holder and manager resolution on `tDVV`
+- explain that the bounty flow requires holder and `caHash` resolution on `tDVV`
 - explain that the current prerequisite is not met
 - tell the user to recover or re-establish the Portkey AA/CA context on `tDVV` first
 - stop without guessing `caHash`
@@ -67,8 +67,9 @@
 ### Correct Output Shape
 
 - repeat the exact chain error
-- explain that the current signer is not a valid manager for this AA/CA on `tDVV`
-- tell the user to switch to a valid manager signer
+- explain that this error does not belong to the recommended permissionless `ClaimByPortkeyToCa` path
+- explain that the request likely went through deprecated `ClaimByPortkey` or Portkey CA `ManagerForwardCall`
+- tell the user to switch back to direct reward-contract `ClaimByPortkeyToCa(caHash)`
 - stop without retrying blindly
 
 ## Example 5: RPC Root Returns 404
@@ -127,12 +128,12 @@
 - explain that node introspection must use the normalized contract address format, not the wrapped `ELF_..._tDVV` address string
 - tell the user to keep the canonical reward contract and supported write methods already defined by the skill unless a verified source disproves them
 
-## Example 8: Direct AA/CA Write To Reward Contract
+## Example 8: ManagerForwardCall Wrapper
 
 ### User Input
 
-- English: `I already used the manager private key to call ClaimByPortkeyToCa directly on the reward contract. Why did that path fail?`
-- 中文: `我已经直接用 manager 私钥去调 reward 合约上的 ClaimByPortkeyToCa 了，这条路径为什么不对？`
+- English: `I used ManagerForwardCall for ClaimByPortkeyToCa. Is that required for AA/CA claims?`
+- 中文: `我用 ManagerForwardCall 去包 ClaimByPortkeyToCa 了。AA/CA 领取一定要这样吗？`
 
 ### Agent Should Choose
 
@@ -140,10 +141,10 @@
 
 ### Correct Output Shape
 
-- explain that the AA/CA claim path must be `manager signer -> CA.ManagerForwardCall -> reward.ClaimByPortkeyToCa`
-- explain that the manager should not directly sign the reward contract write for this flow
-- tell the user to switch back to the canonical forwarded AA/CA path
-- stop without recommending another blind retry on the direct reward-contract call
+- explain that the recommended AA/CA claim path is direct reward-contract `ClaimByPortkeyToCa(Hash ca_hash)`
+- explain that `ManagerForwardCall` is not required for the recommended permissionless flow
+- tell the user to switch back to direct `ClaimByPortkeyToCa(caHash)`
+- stop without recommending another blind retry on the manager-gated wrapper path
 
 ## Example 9: Wrapped Address And Wrong `caHash` Encoding
 

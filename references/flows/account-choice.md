@@ -35,12 +35,12 @@ Then ask:
 3. Tell the user that `AA` is the preferred term in this skill, while `CA` is still accepted as the same route alias.
 4. Recommend `AA/CA` because the current campaign reward is `2 AIBOUNTY`, while `EOA` gets `1 AIBOUNTY`, because `AA/CA` has a smoother gas experience in the current environment, and because users who cannot prepare `ELF` for `EOA` can avoid that blocker by choosing `AA/CA`.
 5. Ask the user to choose `AA/CA` or `EOA`.
-6. If the user chooses `AA`, `CA`, or `AA/CA` and a local AA/CA account is already available, use the Portkey CA skill dependency, then switch to [portkey-ca.md](./portkey-ca.md).
+6. If the user chooses `AA`, `CA`, or `AA/CA` and a local AA/CA account is already available, or the target `caHash` is already known, use the Portkey CA skill dependency, then switch to [portkey-ca.md](./portkey-ca.md).
 7. If the user chooses `AA`, `CA`, or `AA/CA` but no local AA/CA account is ready, guide the user to create or recover a local Portkey AA/CA account first:
    - use the Portkey CA skill dependency
    - use a local Portkey account flow with email / guardian semantics
    - make sure the AA/CA context is available on `tDVV`
-   - make sure a manager signer is available locally
+   - make sure the target `caHash` can be resolved on `tDVV`
 8. After the local AA/CA account is ready, use the Portkey CA skill dependency, then switch to [portkey-ca.md](./portkey-ca.md).
 9. If the user chooses `EOA` and a local EOA account is already available, use the Portkey EOA skill dependency, then switch to [eoa-skill.md](./eoa-skill.md).
 10. If the user chooses `EOA` but no local EOA account is ready, guide the user to create a local self-custodied EOA first:

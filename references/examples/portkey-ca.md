@@ -11,7 +11,7 @@
 
 ## Must Ask Or Confirm
 
-- whether the user wants to send `ManagerForwardCall(...) -> ClaimByPortkeyToCa(caHash)` after seeing the write summary
+- whether the user wants to send `ClaimByPortkeyToCa(caHash)` after seeing the write summary
 
 ## Must Not Ask
 
@@ -22,86 +22,43 @@
 ## Must-Stop Conditions
 
 - `caHash` cannot be resolved on `tDVV`
-- signer is not a current manager
 - AA/CA path has already claimed
-- guardian recovery is still pending
+- guardian recovery is still pending and `caHash` cannot be resolved
 
 ## Correct Output Shape
 
 - identify the branch as Portkey AA/CA
 - explain that user input saying `CA` still maps to the `AA/CA` branch
 - tell the user not to fill exchange addresses
-- show manager signer, `caHash`, Portkey CA contract, reward raw contract, method chain `ManagerForwardCall -> ClaimByPortkeyToCa`, receiver semantics, signer source as local AA/CA account or recovery result, and `2 AIBOUNTY` current campaign reward
+- show gas payer or relayer, `caHash`, reward raw contract, method `ClaimByPortkeyToCa`, receiver semantics, signer source as local gas payer or relayer, and `2 AIBOUNTY` current campaign reward
 - ask for explicit confirmation before sending
 
-## High-Level Preferred Call
-
-Use the higher-level helper when the dependency repository already exposes it:
+## Direct Reward Contract Call
 
 ```ts
-import { getConfig } from "./lib/config.ts";
-import { managerForwardCallWithKey } from "./src/core/contract.ts";
+import { getContractInstance, getWalletByPrivateKey } from "./lib/aelf-client.ts";
 
 const privateKey = process.env.PRIVATE_KEY!;
 const caHash =
   "efe80a13d643af3a55b4e821ef4ef331cf79d20a42b3700e5499c24387b1952f";
 
-const result = await managerForwardCallWithKey(
-  getConfig({ network: "mainnet" }),
-  privateKey,
-  {
-    chainId: "tDVV",
-    caHash,
-    contractAddress: "2fc5uPpboX9K9e9NTiDHxhCcgP8T9nV28BLyK8rDu8JmDpn472",
-    methodName: "ClaimByPortkeyToCa",
-    args: {
-      value: Buffer.from(caHash, "hex"),
-    },
-  }
-);
-```
-
-## Low-Level Equivalent
-
-Use this only when the higher-level helper is unavailable. The write still goes through the Portkey CA contract, not directly to the reward contract.
-
-```ts
-import { getConfig } from "./lib/config.ts";
-import { getChainInfoByChainId } from "./src/core/account.ts";
-import {
-  encodeManagerForwardCallParams,
-  getContractInstance,
-  getWalletByPrivateKey,
-} from "./lib/aelf-client.ts";
-
-const config = getConfig({ network: "mainnet" });
-const chainInfo = getChainInfoByChainId(config, "tDVV");
-const wallet = getWalletByPrivateKey(process.env.PRIVATE_KEY!);
-
-const caHash =
-  "efe80a13d643af3a55b4e821ef4ef331cf79d20a42b3700e5499c24387b1952f";
-
-const payload = await encodeManagerForwardCallParams(chainInfo.endPoint, {
-  caHash,
-  contractAddress: "2fc5uPpboX9K9e9NTiDHxhCcgP8T9nV28BLyK8rDu8JmDpn472",
-  methodName: "ClaimByPortkeyToCa",
-  args: {
-    value: Buffer.from(caHash, "hex"),
-  },
-});
-
-const caContract = await getContractInstance(
-  chainInfo.endPoint,
-  chainInfo.caContractAddress,
+const wallet = getWalletByPrivateKey(privateKey);
+const rewardContract = await getContractInstance(
+  "https://tdvv-public-node.aelf.io",
+  "2fc5uPpboX9K9e9NTiDHxhCcgP8T9nV28BLyK8rDu8JmDpn472",
   wallet
 );
 
-const sendResult = await caContract.ManagerForwardCall(payload);
-console.log(sendResult.TransactionId);
+const result = await rewardContract.ClaimByPortkeyToCa({
+  value: Buffer.from(caHash, "hex"),
+});
+
+console.log(result.TransactionId);
 ```
 
-## Low-Level Notes
+## Direct Call Notes
 
+- `ClaimByPortkeyToCa` is permissionless. Any gas payer or relayer can call it if the `caHash` is valid.
 - `ClaimByPortkeyToCa` does not take a plain string. It expects `.aelf.Hash`, so encode `caHash` as `Hash.value`.
 - The observed protobuf bytes for the successful `Hash` payload were:
 
@@ -109,9 +66,11 @@ console.log(sendResult.TransactionId);
 0a20efe80a13d643af3a55b4e821ef4ef331cf79d20a42b3700e5499c24387b1952f
 ```
 
-- SDK calls should use raw addresses:
+- SDK calls should use the reward raw address when the helper expects raw addresses:
   - reward raw: `2fc5uPpboX9K9e9NTiDHxhCcgP8T9nV28BLyK8rDu8JmDpn472`
+- The CA raw address is needed only if you separately query holder info:
   - CA raw: `2UthYi7AHRdfrqc1YCfeQnjdChDLaas65bW4WxESMGMojFiXj9`
+- Do not route the recommended AA/CA claim through deprecated `ClaimByPortkey` or Portkey CA `ManagerForwardCall`.
 - Do not pass wrapped addresses such as `ELF_2fc5..._tDVV` into helpers that expect raw addresses.
 - When doing descriptor-based encoding, call `root.resolveAll()` before resolving the method or encoding params.
-- A successful AA/CA claim should normally end with a mined transaction and events similar to `VirtualTransactionCreated`, `PortkeyClaimedToCa`, and `Transferred`.
+- A successful AA/CA claim should normally end with a mined transaction and events such as `PortkeyClaimedToCa` and `Transferred`.
