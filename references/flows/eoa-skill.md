@@ -48,10 +48,11 @@ Use this flow only when all conditions below are true:
    - gas prerequisite `EOA has enough ELF to pay gas`
 11. Ask for explicit confirmation.
 12. Only after explicit confirmation, send `Claim()`.
-13. If the first query result is `NOTEXISTED`, wait briefly and query the transaction again; do not treat `NOTEXISTED` as a final result.
-14. Report the `txid` and the exact final chain result.
-15. If the final transaction error is `Transaction fee not enough`, map it to insufficient transaction fee, tell the user to add `ELF`, and recommend switching to `AA/CA` if `ELF` cannot be obtained.
-16. If the transaction fails for another reason, surface the original error and stop.
+13. If a `txId` is returned immediately, share the `txId` and `https://aelfscan.io/tDVV/tx/<txid>` while continuing to poll for the final result.
+14. If the first query result is `NOTEXISTED`, wait briefly and query the transaction again; do not treat `NOTEXISTED` as a final result.
+15. Report the `txId`, the exact final chain result, and `https://aelfscan.io/tDVV/tx/<txid>`.
+16. If the final transaction error is `Transaction fee not enough`, map it to insufficient transaction fee, tell the user to add `ELF`, and recommend switching to `AA/CA` if `ELF` cannot be obtained.
+17. If the transaction fails for another reason, surface the original error and stop.
 
 ## Must-Stop Conditions
 

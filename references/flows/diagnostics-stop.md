@@ -10,9 +10,9 @@ Use this flow for any blocker that makes the signer or claim path invalid:
 - user asks the agent to create or hold a wallet
 - user refuses to choose between `AA/CA` and `EOA`
 - `/api/blockChain/chainStatus` cannot be reached
-- insufficient transaction fee or no available `ELF`
+- the `EOA` path does not have enough transaction fee or available `ELF` before sending
+- the `AA/CA` standard wallet path already failed with `Transaction fee not enough`
 - write methods were misread from a view-only contract introspection result
-- AA/CA write was attempted directly against the reward contract instead of through `CA.ManagerForwardCall`
 - a wrapped `ELF_..._tDVV` address was passed into an SDK or helper that expects a raw address
 - `caHash` was encoded as a string or otherwise not encoded as `.aelf.Hash`
 - descriptor-based encoding was attempted without `root.resolveAll()`
@@ -38,13 +38,13 @@ Use this flow for any blocker that makes the signer or claim path invalid:
 
 ### Mainnet AA/CA Exists But `tDVV` Lookup Fails
 
-- Reason: the bounty claim requires holder and manager resolution on `tDVV`, not only on another network view.
+- Reason: the bounty claim requires holder and `caHash` resolution on `tDVV`, not only on another network view.
 - Next action: ask the user to recover or re-establish the Portkey AA/CA context that is queryable on `tDVV`.
 - Hard stop: do not guess or fabricate `caHash`.
 
 ### Guardian Already Exists And Recovery Is Required
 
-- Reason: the user needs the existing AA/CA context and manager relationship before claiming.
+- Reason: the user needs the existing AA/CA context or a resolvable `caHash` before claiming.
 - Next action: ask the user to complete the recovery flow first, then retry the claim path.
 - Hard stop: do not attempt the final claim while recovery is incomplete.
 
@@ -54,18 +54,13 @@ Use this flow for any blocker that makes the signer or claim path invalid:
 - Next action: return the exact error and map it to the missing prerequisite.
 - Hard stop: do not retry blindly.
 
-### Wrong AA/CA Write Path
-
-- Reason: the AA/CA claim path must use `manager signer -> CA.ManagerForwardCall -> reward.ClaimByPortkeyToCa`, not a direct manager-signed write to the reward contract.
-- Next action: switch back to the canonical forwarded AA/CA path and verify the manager relationship again before retrying.
-- Hard stop: do not keep retrying a direct reward-contract write from the manager signer.
-
 ### Insufficient Transaction Fee
 
-- Reason: the signer does not have enough `ELF` or available gas subsidy to pay the transaction fee.
+- Reason: `EOA` does not have enough `ELF` before send, or the `AA/CA` standard wallet path already returned `Transaction fee not enough`.
 - Next action for `EOA`: tell the user to get `ELF` transferred in, either from another wallet or from an exchange withdrawal, before retrying `Claim()`.
 - Next action for `EOA` if getting `ELF` is not feasible: recommend switching to `AA/CA`, remind them that `AA/CA` gets `2 AIBOUNTY` in the current campaign, and repeat that `AA/CA` has a smoother gas experience in the current environment.
-- Next action for `AA/CA`: tell the user to confirm whether the current daily subsidy conditions are satisfied; if not, they still need additional `ELF`.
+- Next action for `AA/CA`: explain that one AA/CA attempt was allowed because subsidy may apply, but the actual chain result still shows fee was not enough; ask the user to wait for the subsidy window to refresh or add `ELF` before retrying.
+- If a failed or pending transaction already has a `txId`, include the `txId` and `https://aelfscan.io/tDVV/tx/<txid>` in the stop response.
 - Hard stop: do not misclassify `Transaction fee not enough` as an RPC failure or a claim logic failure.
 
 ### Transaction Status Still Pending
@@ -88,14 +83,14 @@ Use this flow for any blocker that makes the signer or claim path invalid:
 
 ### Wrapped Address Used Where Raw Address Is Required
 
-- Reason: some SDK and helper calls expect raw addresses such as `2fc5...`, not wrapped addresses such as `ELF_2fc5..._tDVV`.
+- Reason: some SDK and helper calls expect raw addresses such as `2Uth...` or `2fc5...`, not wrapped addresses such as `ELF_..._tDVV`.
 - Next action: strip the wrapped address into the raw address format before calling SDK helpers, payload encoders, or node introspection APIs that require raw addresses.
 - Hard stop: do not assume the wrapped address will be normalized automatically.
 
 ### Wrong `caHash` Parameter Encoding
 
 - Reason: `ClaimByPortkeyToCa` expects `.aelf.Hash`, not a plain string or an arbitrary object shape.
-- Next action: encode the forwarded args as `args: { value: Buffer.from(caHash, "hex") }`.
+- Next action: encode the forwarded args for `ManagerForwardCall` as `args: { value: Buffer.from(caHash, "hex") }`.
 - Hard stop: do not retry with a string `caHash` payload.
 
 ### Descriptor Not Fully Resolved
@@ -106,15 +101,17 @@ Use this flow for any blocker that makes the signer or claim path invalid:
 
 ## AA/CA Troubleshooting Notes
 
-- For AA/CA claims, the manager signer is the transaction sender, but the reward still goes to the resolved AA/CA address.
-- The forwarded reward method input must be `.aelf.Hash`, not `string`.
+- The standard AA/CA wallet path in this skill is `ManagerForwardCall(...) -> ClaimByPortkeyToCa(Hash ca_hash)`.
+- `ClaimByPortkeyToCa(Hash ca_hash)` is permissionless at the reward method layer, but the forwarded reward still goes to the resolved AA/CA address rather than the manager signer.
+- Do not stop AA/CA before the first standard-path attempt only because visible `ELF` is zero.
+- The `ClaimByPortkeyToCa` input must be `.aelf.Hash`, not `string`.
 - `NOTEXISTED` only means the transaction is not confirmed yet; it is not a final result.
-- A successful forwarded AA/CA claim often emits `VirtualTransactionCreated`, `PortkeyClaimedToCa`, and `Transferred`.
+- A successful AA/CA claim often emits `PortkeyClaimedToCa` and `Transferred`. If the request was wrapped through `ManagerForwardCall`, additional events such as `VirtualTransactionCreated` may also appear.
 
 ## Error Mapping
 
-- `Sender is not a manager of the CA holder.` -> the current signer is not valid for this AA/CA on `tDVV`
 - `CA holder not found.` -> `caHash` is missing or not valid on `tDVV`
+- `Sender is not a manager of the CA holder.` -> the local AA/CA manager context is not ready on `tDVV`; recover or re-login and do not lead with the raw manager error text
 - `Address has already claimed.` -> the EOA path is already consumed
 - `CA hash has already claimed.` -> the AA/CA path is already consumed
 - `Transaction fee not enough.` -> the signer has insufficient fee balance or no usable gas subsidy
@@ -128,6 +125,7 @@ The response should contain:
 - blocker category
 - reason claiming cannot continue
 - next required user action
+- `txId` and `https://aelfscan.io/tDVV/tx/<txid>` when a transaction already exists
 - explicit stop statement
 
 ## Example Reference
