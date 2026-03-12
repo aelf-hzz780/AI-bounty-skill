@@ -4,7 +4,7 @@
 
 This public repository contains a single skill for claiming the AI bounty on the `aelf` `tDVV` mainnet sidechain through `RewardClaimContract`.
 
-For AA/CA, the canonical claim path is `manager signer -> CA.ManagerForwardCall -> reward.ClaimByPortkeyToCa(Hash ca_hash)`.
+For AA/CA, the standard wallet claim path is `manager signer -> CA.ManagerForwardCall -> reward.ClaimByPortkeyToCa(Hash ca_hash)`.
 
 ## Repository Design
 
@@ -36,8 +36,8 @@ This skill supports only the current public claim paths:
 - AA/CA claims should use the standard wallet path `manager signer -> CA.ManagerForwardCall -> reward.ClaimByPortkeyToCa(Hash ca_hash)`.
 - `ClaimByPortkeyToCa(Hash ca_hash)` is permissionless at the reward method layer, but the reward still goes to the resolved `caHash -> caAddress`, not to the manager signer.
 - For AA/CA SDK or helper calls that require raw addresses, use raw CA and reward addresses instead of wrapped `ELF_..._tDVV` addresses.
-- If only an email is known for AA/CA, the agent should restore the local AA/CA context on `tDVV` and use recovery or login when needed to obtain a valid manager signer and `caHash`.
-- Current environment gas rules are documented as daily subsidy behavior around `1 ELF`, with `AA/CA` usually having a smoother gas experience and `EOA` requiring sufficient `ELF` before sending `Claim()`.
+- If only an email is known for AA/CA, the agent should resolve the target `caHash` first, and recover a usable manager signer when needed for the standard wallet path.
+- Current environment gas rules are documented as daily subsidy behavior around `1 ELF`; for AA/CA, the agent should usually allow one confirmed attempt on the standard wallet path even when visible `ELF` is low or zero, while EOA still requires sufficient `ELF` before sending `Claim()`.
 - If `EOA` cannot obtain enough `ELF`, the agent should recommend switching to `AA/CA`.
 - Validate RPC reachability with [chainStatus](https://tdvv-public-node.aelf.io/api/blockChain/chainStatus), not by requesting the RPC root URL.
 - Do not use `/api/contract/contractViewMethodList` to conclude that the reward contract lacks write methods.
@@ -52,6 +52,7 @@ This skill supports only the current public claim paths:
 - The agent should tell users not to fill exchange or custodial addresses.
 - The agent should use the local EOA address or local AA/CA account context instead of asking the user to paste an address.
 - If the chosen local account is not ready, the agent should guide the user to create the local AA/CA or local EOA first.
+- If a submitted transaction returns `txId`, the agent should include `txId` and `https://aelfscan.io/tDVV/tx/<txid>` in the reply.
 - If the chain returns an error, the agent must surface the exact error and stop.
 
 ## Usage

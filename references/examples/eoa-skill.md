@@ -34,6 +34,7 @@
 - show signer, contract, method, receiver semantics, signer source as local EOA account, and `1 AIBOUNTY` current campaign reward
 - show the gas prerequisite clearly before sending
 - ask for explicit confirmation before sending
+- after sending, return `txId` and `https://aelfscan.io/tDVV/tx/<txid>`
 
 ## Example 2: EOA Has No ELF For Gas
 

@@ -19,7 +19,7 @@ The agent must first explain:
 - `AA`: this is the preferred user-facing term in this skill
 - `CA`: this is still accepted as an alias because some users still say `CA`
 - `EOA`: traditional wallet experience, usually based on mnemonic / private key, current campaign reward is `1 AIBOUNTY`
-- `AA/CA`: when fee balance is insufficient, the current environment may provide a daily gas subsidy worth `1 ELF`
+- `AA/CA`: when fee balance looks low, the current environment may still provide a daily gas subsidy worth `1 ELF`, so the first confirmed AA/CA claim can usually be tried before fee is treated as the blocker
 - `EOA`: if there is not enough `ELF`, the claim transaction can fail with `Transaction fee not enough`
 - `EOA`: if the user cannot get enough `ELF`, they should switch to `AA/CA`
 - recommendation: choose `AA/CA`
@@ -33,7 +33,7 @@ Then ask:
 1. Tell the user not to fill exchange or custodial addresses.
 2. Explain the difference between `AA/CA` and `EOA` using the required explanation above.
 3. Tell the user that `AA` is the preferred term in this skill, while `CA` is still accepted as the same route alias.
-4. Recommend `AA/CA` because the current campaign reward is `2 AIBOUNTY`, while `EOA` gets `1 AIBOUNTY`, because `AA/CA` has a smoother gas experience in the current environment, and because users who cannot prepare `ELF` for `EOA` can avoid that blocker by choosing `AA/CA`.
+4. Recommend `AA/CA` because the current campaign reward is `2 AIBOUNTY`, while `EOA` gets `1 AIBOUNTY`, because `AA/CA` has a smoother gas experience in the current environment and can usually try one confirmed AA/CA claim before fee becomes the blocker, and because users who cannot prepare `ELF` for `EOA` can avoid that blocker by choosing `AA/CA`.
 5. Ask the user to choose `AA/CA` or `EOA`.
 6. If the user chooses `AA`, `CA`, or `AA/CA` and a local AA/CA account is already available, or the target `caHash` is already known, use the Portkey CA skill dependency, then switch to [portkey-ca.md](./portkey-ca.md).
 7. If the user chooses `AA`, `CA`, or `AA/CA` but no local AA/CA account is ready, guide the user to create or recover a local Portkey AA/CA account first:

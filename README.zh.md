@@ -4,7 +4,7 @@
 
 这是一个公开 skill 仓库，用于在 `aelf` 的 `tDVV` 主网侧链环境中，通过 `RewardClaimContract` 领取 AI bounty。
 
-对 AA/CA 来说，标准领取路径是 `manager signer -> CA.ManagerForwardCall -> reward.ClaimByPortkeyToCa(Hash ca_hash)`。
+对 AA/CA 来说，当前 skill 的标准 wallet 路径是 `manager signer -> CA.ManagerForwardCall -> reward.ClaimByPortkeyToCa(Hash ca_hash)`。
 
 ## 仓库结构
 
@@ -35,9 +35,9 @@
 - 当前活动默认奖励写法为：AA/CA `2 AIBOUNTY`，EOA `1 AIBOUNTY`。
 - AA/CA 应按标准 wallet path `manager signer -> CA.ManagerForwardCall -> reward.ClaimByPortkeyToCa(Hash ca_hash)` 发送。
 - `ClaimByPortkeyToCa(Hash ca_hash)` 在 reward 方法层是 permissionless，但奖励仍然进入 `caHash -> caAddress`，不会进入 manager signer。
-- 对 AA/CA 的 SDK 或 helper 调用，如要求 raw address，应使用 raw CA/reward 地址，不要直接传 `ELF_..._tDVV` 包装地址。
-- 如果当前只知道邮箱而不知道 `caHash`，应先恢复本地 `tDVV` 上的 AA/CA 上下文；如本地上下文未就绪，再通过 recover/login 获取可用的 manager signer 和 `caHash`。
-- 当前环境下的 Gas 规则应说明清楚：`AA/CA` 在手续费不足时可能享受每日价值 `1 ELF` 的补贴；`AA/CA` 或 `EOA` 在链上账户有 `10 ELF` 时也可能享受每日价值 `1 ELF` 的补贴；`EOA` 没有足够 `ELF` 时不得继续发送 `Claim()`。
+- 对 AA/CA 的 SDK 或 helper 调用，如要求 raw address，应使用 raw CA / reward 地址，不要直接传 `ELF_..._tDVV` 包装地址。
+- 如果当前只知道邮箱而不知道 `caHash`，应先解析目标 `caHash`，并在标准 wallet path 需要时恢复可用的 manager signer。
+- 当前环境下的 Gas 规则应说明清楚：AA/CA 可能享受每日价值 `1 ELF` 的补贴；对 AA/CA 来说，即使可见 `ELF` 很低或为 `0`，通常也应先在明确提示风险并获得确认后，对标准 wallet path 先发一次；EOA 没有足够 `ELF` 时不得继续发送 `Claim()`。
 - 如果 `EOA` 无法获得足够的 `ELF`，应明确建议切换到 `AA/CA`。
 - 校验 RPC 是否可用时，应请求 [chainStatus](https://tdvv-public-node.aelf.io/api/blockChain/chainStatus)，不要用 RPC 根路径是否返回 `404` 来判断节点挂了。
 - 不要使用 `/api/contract/contractViewMethodList` 去判断奖励合约没有写方法。
@@ -52,6 +52,7 @@
 - 要直接提示用户：请勿填写交易所地址或托管地址。
 - 不要向用户索要地址；应优先使用本地 EOA 地址或本地 AA/CA 账号上下文。
 - 如果所选本地账户尚未就绪，应先引导创建本地 AA/CA 或本地 EOA，再继续领取流程。
+- 如果已拿到 `txId`，应在回复里直接附上 `txId` 和 `https://aelfscan.io/tDVV/tx/<txid>`。
 - 链上返回错误时，必须原样返回错误并停止。
 
 ## 使用方式

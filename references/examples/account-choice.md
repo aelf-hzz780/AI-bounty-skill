@@ -18,7 +18,7 @@
 - explain that `AA/CA` is more account-style and usually uses email / guardian / recovery semantics
 - explain that `EOA` is the traditional mnemonic / private key wallet style
 - explain that the current campaign reward is `2 AIBOUNTY` for `AA/CA` and `1 AIBOUNTY` for `EOA`
-- explain that `AA/CA` has smoother gas experience in the current environment
+- explain that `AA/CA` has smoother gas experience in the current environment and can usually try one confirmed AA/CA claim before fee is treated as the blocker
 - explain that `EOA` may fail with `Transaction fee not enough` if there is no `ELF`
 - explain that if the user cannot get enough `ELF` for `EOA`, they should switch to `AA/CA`
 - recommend `AA/CA`

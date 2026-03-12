@@ -106,7 +106,8 @@
 - explain that this is not an RPC outage and not a claim logic failure
 - for `EOA`, tell the user to get `ELF` transferred in before retrying
 - for `EOA`, if getting `ELF` is not feasible, recommend switching to `AA/CA`
-- for `AA/CA`, tell the user to confirm subsidy conditions or add `ELF` if needed
+- for `AA/CA`, explain that one AA/CA attempt was allowed because subsidy may apply, but the actual chain result still shows fee was not enough
+- if a `txId` is already known, include `txId` and `https://aelfscan.io/tDVV/tx/<txid>`
 
 ## Example 7: View-Only API Misread As Full Method List
 
@@ -158,7 +159,7 @@
 
 ### Correct Output Shape
 
-- explain that some SDK and helper calls require raw CA or reward addresses such as `2Uth...` and `2fc5...`, not wrapped `ELF_..._tDVV` addresses
+- explain that some SDK and helper calls require raw addresses such as `2Uth...` and `2fc5...`, not wrapped `ELF_..._tDVV` addresses
 - explain that `ClaimByPortkeyToCa` expects `.aelf.Hash`, not a plain string
 - tell the user to encode the forwarded args as `args: { value: Buffer.from(caHash, "hex") }`
 - if descriptor-based encoding is involved, remind the user to call `root.resolveAll()` before resolving the method or encoding params
