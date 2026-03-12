@@ -22,23 +22,30 @@ This skill supports only the current public claim methods:
 ## Routing Branches
 
 - Account choice and onboarding
-- Portkey CA claim
+- Portkey AA/CA claim
 - EOA claim
 - Diagnostics and stop
 
 ## Shared Rules
 
+- The canonical skill version is the `version` field in [SKILL.md](./SKILL.md). Ask external users or agents to report that value first when behavior looks inconsistent.
 - `tDVV` is documented here as the current AI bounty mainnet sidechain environment.
-- Current campaign default reward amounts are documented as `2 AIBOUNTY` for CA and `1 AIBOUNTY` for EOA.
-- Current environment gas rules are documented as daily subsidy behavior around `1 ELF`, with `EOA` requiring sufficient `ELF` before sending `Claim()`.
+- Current campaign default reward amounts are documented as `2 AIBOUNTY` for AA/CA and `1 AIBOUNTY` for EOA.
+- Current environment gas rules are documented as daily subsidy behavior around `1 ELF`, with `AA/CA` usually having a smoother gas experience and `EOA` requiring sufficient `ELF` before sending `Claim()`.
+- If `EOA` cannot obtain enough `ELF`, the agent should recommend switching to `AA/CA`.
 - Validate RPC reachability with [chainStatus](https://tdvv-public-node.aelf.io/api/blockChain/chainStatus), not by requesting the RPC root URL.
-- For generic claim requests, the agent must first explain `CA vs EOA`, recommend `CA`, and ask which one the user wants to use.
-- `CA` is the recommended default because the current campaign reward is higher.
-- `CA` is also recommended because its gas experience is smoother in the current environment.
-- The skill should explicitly use [Portkey EOA skill](https://github.com/Portkey-Wallet/eoa-agent-skills) for EOA handling and [Portkey CA skill](https://github.com/Portkey-Wallet/ca-agent-skills) for CA handling.
+- Do not use `/api/contract/contractViewMethodList` to conclude that the reward contract lacks write methods.
+- If full method verification is needed, use `/api/blockChain/contractFileDescriptorSet` only as an optional verification path.
+- When using node introspection APIs, normalize the contract address into the endpoint-accepted format instead of sending the wrapped `ELF_..._tDVV` string directly.
+- For generic claim requests, the agent must first explain `AA/CA vs EOA`, recommend `AA/CA`, and ask which one the user wants to use.
+- `AA` is the preferred user-facing term here, while `CA` remains an accepted alias.
+- `AA/CA` is the recommended default because the current campaign reward is higher.
+- `AA/CA` is also recommended because its gas experience is smoother in the current environment.
+- `AA/CA` is also the recommended fallback when `EOA` cannot get enough `ELF`.
+- The skill should explicitly use [Portkey EOA skill](https://github.com/Portkey-Wallet/eoa-agent-skills) for EOA handling and [Portkey CA skill](https://github.com/Portkey-Wallet/ca-agent-skills) for AA/CA handling.
 - The agent should tell users not to fill exchange or custodial addresses.
-- The agent should use the local EOA address or local CA account context instead of asking the user to paste an address.
-- If the chosen local account is not ready, the agent should guide the user to create the local CA or local EOA first.
+- The agent should use the local EOA address or local AA/CA account context instead of asking the user to paste an address.
+- If the chosen local account is not ready, the agent should guide the user to create the local AA/CA or local EOA first.
 - If the chain returns an error, the agent must surface the exact error and stop.
 
 ## Usage

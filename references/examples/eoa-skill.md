@@ -15,7 +15,7 @@
 
 ## Must Not Ask
 
-- do not re-explain the basic `CA vs EOA` difference after the account type is already chosen
+- do not re-explain the basic `AA/CA vs EOA` difference after the account type is already chosen
 - `ca_hash`
 - guardian information
 - Portkey recovery questions
@@ -51,3 +51,4 @@
 - explain that the problem is insufficient transaction fee, not claim logic
 - explain that `EOA` needs enough `ELF` before sending `Claim()`
 - tell the user to get `ELF` transferred in before retrying
+- if the user cannot get enough `ELF`, recommend switching to `AA/CA` because `AA/CA` gets `2 AIBOUNTY` in the current campaign and has a smoother gas experience

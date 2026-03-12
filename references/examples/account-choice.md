@@ -13,15 +13,17 @@
 
 ### Correct Output Shape
 
-- explain `CA vs EOA`
-- explain that `CA` is more account-style and usually uses email / guardian / recovery semantics
+- explain `AA/CA vs EOA`
+- explain that `AA` is the preferred user-facing term and `CA` is still accepted as an alias
+- explain that `AA/CA` is more account-style and usually uses email / guardian / recovery semantics
 - explain that `EOA` is the traditional mnemonic / private key wallet style
-- explain that the current campaign reward is `2 AIBOUNTY` for `CA` and `1 AIBOUNTY` for `EOA`
-- explain that `CA` has smoother gas experience in the current environment
+- explain that the current campaign reward is `2 AIBOUNTY` for `AA/CA` and `1 AIBOUNTY` for `EOA`
+- explain that `AA/CA` has smoother gas experience in the current environment
 - explain that `EOA` may fail with `Transaction fee not enough` if there is no `ELF`
-- recommend `CA`
-- ask the user to choose `CA` or `EOA`
-- prepare to use `https://github.com/Portkey-Wallet/ca-agent-skills` for `CA` or `https://github.com/Portkey-Wallet/eoa-agent-skills` for `EOA`
+- explain that if the user cannot get enough `ELF` for `EOA`, they should switch to `AA/CA`
+- recommend `AA/CA`
+- ask the user to choose `AA/CA` or `EOA`
+- prepare to use `https://github.com/Portkey-Wallet/ca-agent-skills` for `AA/CA` or `https://github.com/Portkey-Wallet/eoa-agent-skills` for `EOA`
 
 ## Example 2: Generic Claim Request Without Local Account
 
@@ -36,10 +38,12 @@
 
 ### Correct Output Shape
 
-- explain `CA vs EOA`
-- recommend `CA`
-- ask the user to choose `CA` or `EOA`
-- if the user chooses `CA`, guide them to create or recover a local Portkey CA account first with `https://github.com/Portkey-Wallet/ca-agent-skills`
+- explain `AA/CA vs EOA`
+- explain that `CA` is still accepted as an alias for the `AA/CA` route
+- recommend `AA/CA`
+- ask the user to choose `AA/CA` or `EOA`
+- if the user chooses `AA`, `CA`, or `AA/CA`, guide them to create or recover a local Portkey AA/CA account first with `https://github.com/Portkey-Wallet/ca-agent-skills`
 - if the user chooses `EOA`, guide them to create a local mnemonic / private key account first with `https://github.com/Portkey-Wallet/eoa-agent-skills`
 - if the user chooses `EOA`, explain they still need enough `ELF` to pay gas before sending `Claim()`
+- if the user chooses `EOA`, explain that failing to obtain `ELF` should trigger a switch back to `AA/CA`
 - do not jump directly into claim execution
