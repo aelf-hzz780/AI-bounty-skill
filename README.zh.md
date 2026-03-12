@@ -30,7 +30,8 @@
 
 - `tDVV` 在本仓库中按当前 AI bounty 的主网侧链环境描述。
 - 当前活动默认奖励写法为：CA `2 tokens`，EOA `1 token`。
-- 对“帮我 Claim / 帮我领取”这类泛化诉求，必须先解释 `CA` 和 `EOA` 的区别，推荐 `CA`，再让用户选择。
+- 对未明确账户类型的泛化 claim 诉求，必须先解释 `CA` 和 `EOA` 的区别，推荐 `CA`，再让用户选择。
+- 必须显式使用 [Portkey EOA skill](https://github.com/Portkey-Wallet/eoa-agent-skills) 处理 EOA 相关事情，使用 [Portkey CA skill](https://github.com/Portkey-Wallet/ca-agent-skills) 处理 CA 相关事情，不能指望 AI 自己隐式推断。
 - `CA` 是默认推荐路径，因为当前活动奖励更高。
 - 要直接提示用户：请勿填写交易所地址或托管地址。
 - 不要向用户索要地址；应优先使用本地 EOA 地址或本地 CA 账号上下文。

@@ -2,6 +2,12 @@
 
 Use this branch for the CA claim path after account type selection is complete.
 
+## Required Dependency
+
+Use the Portkey CA skill explicitly:
+
+- `https://github.com/Portkey-Wallet/ca-agent-skills`
+
 ## When To Use
 
 Use this flow when any of the following is true:
@@ -22,9 +28,9 @@ Use this flow when any of the following is true:
 
 1. Confirm the user wants the reward credited to a Portkey CA.
 2. Tell the user not to fill exchange or custodial addresses.
-3. Resolve the local Portkey CA account context and its current manager signer on `tDVV`.
+3. Use the Portkey CA skill dependency to resolve the local Portkey CA account context and its current manager signer on `tDVV`.
 4. If the user says the CA exists on mainnet only, `tDVV` lookup fails, or guardian recovery is still required, stop and switch to [diagnostics-stop.md](./diagnostics-stop.md).
-5. Resolve or verify `ca_hash` through the local Portkey CA context first, then through the Portkey CA skill if needed.
+5. Resolve or verify `ca_hash` through the local Portkey CA context first, then through the Portkey CA skill dependency if needed.
 6. Query `GetHolderInfo(ca_hash)` on the `tDVV` Portkey CA contract.
 7. Check that the resolved manager list contains the transaction sender.
 8. Check that the claim contract is currently claimable on `tDVV`.
