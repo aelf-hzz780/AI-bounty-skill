@@ -6,7 +6,8 @@ Use this branch for generic claim requests before entering a concrete claim path
 
 Use this flow when any of the following is true:
 
-- the user says `帮我 Claim`, `帮我领取`, or another generic claim request
+- the user makes a generic claim request without explicitly choosing `CA` or `EOA`
+- examples: `help me claim`, `claim for me`, `帮我 Claim`, `帮我领取`
 - the user has not yet chosen between `CA` and `EOA`
 - the user chose `CA` or `EOA`, but the local account context is not ready yet
 
@@ -28,18 +29,20 @@ Then ask:
 2. Explain the difference between `CA` and `EOA` using the required explanation above.
 3. Recommend `CA` because the current campaign reward is `2 tokens`, while `EOA` gets `1 token`.
 4. Ask the user to choose `CA` or `EOA`.
-5. If the user chooses `CA` and a local CA account is already available, switch to [portkey-ca.md](./portkey-ca.md).
+5. If the user chooses `CA` and a local CA account is already available, use the Portkey CA skill dependency, then switch to [portkey-ca.md](./portkey-ca.md).
 6. If the user chooses `CA` but no local CA account is ready, guide the user to create or recover a local Portkey CA account first:
+   - use the Portkey CA skill dependency
    - use a local Portkey account flow with email / guardian semantics
    - make sure the CA context is available on `tDVV`
    - make sure a manager signer is available locally
-7. After the local CA account is ready, switch to [portkey-ca.md](./portkey-ca.md).
-8. If the user chooses `EOA` and a local EOA account is already available, switch to [eoa-skill.md](./eoa-skill.md).
+7. After the local CA account is ready, use the Portkey CA skill dependency, then switch to [portkey-ca.md](./portkey-ca.md).
+8. If the user chooses `EOA` and a local EOA account is already available, use the Portkey EOA skill dependency, then switch to [eoa-skill.md](./eoa-skill.md).
 9. If the user chooses `EOA` but no local EOA account is ready, guide the user to create a local self-custodied EOA first:
+   - use the Portkey EOA skill dependency
    - use mnemonic / private key style account semantics
    - make sure the signer is locally available
    - make sure the user understands EOA only gets `1 token` in the current campaign
-10. After the local EOA account is ready, switch to [eoa-skill.md](./eoa-skill.md).
+10. After the local EOA account is ready, use the Portkey EOA skill dependency, then switch to [eoa-skill.md](./eoa-skill.md).
 
 ## Must-Stop Conditions
 

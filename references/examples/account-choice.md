@@ -18,6 +18,7 @@
 - explain that the current campaign reward is `2 tokens` for `CA` and `1 token` for `EOA`
 - recommend `CA`
 - ask the user to choose `CA` or `EOA`
+- prepare to use `https://github.com/Portkey-Wallet/ca-agent-skills` for `CA` or `https://github.com/Portkey-Wallet/eoa-agent-skills` for `EOA`
 
 ## Example 2: Generic Claim Request Without Local Account
 
@@ -34,6 +35,6 @@
 - explain `CA vs EOA`
 - recommend `CA`
 - ask the user to choose `CA` or `EOA`
-- if the user chooses `CA`, guide them to create or recover a local Portkey CA account first
-- if the user chooses `EOA`, guide them to create a local mnemonic / private key account first
+- if the user chooses `CA`, guide them to create or recover a local Portkey CA account first with `https://github.com/Portkey-Wallet/ca-agent-skills`
+- if the user chooses `EOA`, guide them to create a local mnemonic / private key account first with `https://github.com/Portkey-Wallet/eoa-agent-skills`
 - do not jump directly into claim execution

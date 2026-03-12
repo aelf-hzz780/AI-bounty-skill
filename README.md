@@ -32,6 +32,7 @@ This skill supports only the current public claim methods:
 - Current campaign default reward amounts are documented as `2 tokens` for CA and `1 token` for EOA.
 - For generic claim requests, the agent must first explain `CA vs EOA`, recommend `CA`, and ask which one the user wants to use.
 - `CA` is the recommended default because the current campaign reward is higher.
+- The skill should explicitly use [Portkey EOA skill](https://github.com/Portkey-Wallet/eoa-agent-skills) for EOA handling and [Portkey CA skill](https://github.com/Portkey-Wallet/ca-agent-skills) for CA handling.
 - The agent should tell users not to fill exchange or custodial addresses.
 - The agent should use the local EOA address or local CA account context instead of asking the user to paste an address.
 - If the chosen local account is not ready, the agent should guide the user to create the local CA or local EOA first.

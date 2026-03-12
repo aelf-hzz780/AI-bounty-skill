@@ -23,6 +23,18 @@ This skill does not implement:
 - Portkey recovery flows
 - blind retry loops after claim failures
 
+## Required Dependency Skills
+
+Use these dependency skills explicitly instead of assuming the host will infer them:
+
+- Portkey EOA skill: `https://github.com/Portkey-Wallet/eoa-agent-skills`
+- Portkey CA skill: `https://github.com/Portkey-Wallet/ca-agent-skills`
+
+Routing rule:
+
+- use the Portkey EOA skill for local EOA account setup, signer resolution, and EOA-side `Claim()`
+- use the Portkey CA skill for local CA account setup, recovery-dependent checks, `ca_hash` resolution, manager validation, and CA-side `ClaimByPortkeyToCa(Hash ca_hash)`
+
 ## Current Environment Defaults
 
 Use these defaults only when the user is clearly operating in the current AI bounty environment:
@@ -38,7 +50,14 @@ Treat reward amounts and addresses as campaign defaults, not permanent protocol 
 
 ## Required First Step
 
-For generic requests like `帮我 Claim` or `帮我领取`, do not jump directly to an on-chain method.
+For generic claim requests without an explicit account type, do not jump directly to an on-chain method.
+
+Examples:
+
+- `help me claim`
+- `claim for me`
+- `帮我 Claim`
+- `帮我领取`
 
 The agent must first explain:
 
@@ -56,7 +75,8 @@ Choose one branch before asking for extra claim inputs.
 
 Read [references/flows/account-choice.md](./references/flows/account-choice.md) when:
 
-- the user says `帮我 Claim`, `帮我领取`, or another generic claim request
+- the user makes a generic claim request without explicitly choosing `CA` or `EOA`
+- examples: `help me claim`, `claim for me`, `帮我 Claim`, `帮我领取`
 - the user has not yet chosen between `CA` and `EOA`
 - the user has chosen `CA` or `EOA`, but the local account context is not ready yet
 
@@ -77,6 +97,7 @@ Read [references/flows/portkey-ca.md](./references/flows/portkey-ca.md) when:
 - the user explicitly chose `CA`
 - a local Portkey CA account is already available
 - the sender is expected to be a Portkey manager signer on `tDVV`
+- use the Portkey CA skill dependency for CA handling
 
 ### Branch 4: EOA Claim
 
@@ -85,6 +106,7 @@ Read [references/flows/eoa-skill.md](./references/flows/eoa-skill.md) when:
 - the user explicitly chose `EOA`
 - a local EOA account is already available
 - no CA identity flow is involved
+- use the Portkey EOA skill dependency for EOA handling
 
 ## Global Hard Rules
 
@@ -94,6 +116,7 @@ Read [references/flows/eoa-skill.md](./references/flows/eoa-skill.md) when:
 - Do not ask the user to paste an address when a local EOA or local CA context should be used.
 - For generic claim requests, explain `CA vs EOA` first and ask the user to choose one before entering a claim branch.
 - Always recommend `CA` because the current campaign reward is `2 tokens` for `CA` and `1 token` for `EOA`.
+- Explicitly use the Portkey EOA skill for EOA work and the Portkey CA skill for CA work; do not rely on implicit skill discovery.
 - If the chosen local account context is not ready, guide the user to create the local `CA` or local `EOA` first, then continue with the matching claim branch.
 - Never ask for `ca_hash` in a plain EOA `Claim()` flow.
 - Prefer the locally created EOA address for `Claim()` and the locally created CA account for `ClaimByPortkeyToCa(Hash ca_hash)`.

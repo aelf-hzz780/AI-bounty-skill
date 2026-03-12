@@ -2,6 +2,12 @@
 
 Use this branch for the EOA claim path after account type selection is complete.
 
+## Required Dependency
+
+Use the Portkey EOA skill explicitly:
+
+- `https://github.com/Portkey-Wallet/eoa-agent-skills`
+
 ## When To Use
 
 Use this flow only when all conditions below are true:
@@ -21,7 +27,7 @@ Use this flow only when all conditions below are true:
 ## Step-By-Step
 
 1. Tell the user not to fill exchange or custodial addresses.
-2. Use the dependent EOA skill to resolve the active signer from the local EOA account context.
+2. Use the Portkey EOA skill dependency to resolve the active signer from the local EOA account context.
 3. If the resolved address is exchange-managed, custodial, or signer ownership is unclear, stop and switch to [diagnostics-stop.md](./diagnostics-stop.md).
 4. Check that the claim contract is currently claimable on `tDVV`.
 5. Check that the resolved local EOA address has not already claimed.
