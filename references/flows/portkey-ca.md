@@ -28,14 +28,15 @@ Use this flow when any of the following is true:
 
 1. Confirm the user wants the reward credited to a Portkey CA.
 2. Tell the user not to fill exchange or custodial addresses.
-3. Use the Portkey CA skill dependency to resolve the local Portkey CA account context and its current manager signer on `tDVV`.
-4. If the user says the CA exists on mainnet only, `tDVV` lookup fails, or guardian recovery is still required, stop and switch to [diagnostics-stop.md](./diagnostics-stop.md).
-5. Resolve or verify `ca_hash` through the local Portkey CA context first, then through the Portkey CA skill dependency if needed.
-6. Query `GetHolderInfo(ca_hash)` on the `tDVV` Portkey CA contract.
-7. Check that the resolved manager list contains the transaction sender.
-8. Check that the claim contract is currently claimable on `tDVV`.
-9. Check that the CA path has not already claimed.
-10. Show the write summary:
+3. Validate the `tDVV` RPC through `https://tdvv-public-node.aelf.io/api/blockChain/chainStatus`.
+4. Use the Portkey CA skill dependency to resolve the local Portkey CA account context and its current manager signer on `tDVV`.
+5. If the user says the CA exists on mainnet only, `tDVV` lookup fails, or guardian recovery is still required, stop and switch to [diagnostics-stop.md](./diagnostics-stop.md).
+6. Resolve or verify `ca_hash` through the local Portkey CA context first, then through the Portkey CA skill dependency if needed.
+7. Query `GetHolderInfo(ca_hash)` on the `tDVV` Portkey CA contract.
+8. Check that the resolved manager list contains the transaction sender.
+9. Check that the claim contract is currently claimable on `tDVV`.
+10. Check that the CA path has not already claimed.
+11. Show the write summary:
    - manager signer
    - `ca_hash`
    - reward contract
@@ -43,10 +44,11 @@ Use this flow when any of the following is true:
    - receiver semantics `reward goes to the CA address`
    - signer source `resolved from local CA account`
    - expected reward `2 tokens` in the current campaign
-11. Ask for explicit confirmation.
-12. Only after explicit confirmation, send `ClaimByPortkeyToCa(ca_hash)` directly from the manager signer.
-13. Report the `txid` and the exact chain result.
-14. If the transaction fails, surface the original error and stop.
+   - RPC validation endpoint `https://tdvv-public-node.aelf.io/api/blockChain/chainStatus`
+12. Ask for explicit confirmation.
+13. Only after explicit confirmation, send `ClaimByPortkeyToCa(ca_hash)` directly from the manager signer.
+14. Report the `txid` and the exact chain result.
+15. If the transaction fails, surface the original error and stop.
 
 ## Must-Stop Conditions
 
@@ -58,6 +60,7 @@ Stop immediately if any of the following is true:
 - the CA path has already claimed
 - the user asks to send the reward to the manager address instead of the CA address
 - no local CA account can be resolved
+- `/api/blockChain/chainStatus` cannot be reached
 
 ## Output Shape
 

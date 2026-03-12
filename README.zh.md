@@ -30,6 +30,7 @@
 
 - `tDVV` 在本仓库中按当前 AI bounty 的主网侧链环境描述。
 - 当前活动默认奖励写法为：CA `2 tokens`，EOA `1 token`。
+- 校验 RPC 是否可用时，应请求 [chainStatus](https://tdvv-public-node.aelf.io/api/blockChain/chainStatus)，不要用 RPC 根路径是否返回 `404` 来判断节点挂了。
 - 对未明确账户类型的泛化 claim 诉求，必须先解释 `CA` 和 `EOA` 的区别，推荐 `CA`，再让用户选择。
 - 必须显式使用 [Portkey EOA skill](https://github.com/Portkey-Wallet/eoa-agent-skills) 处理 EOA 相关事情，使用 [Portkey CA skill](https://github.com/Portkey-Wallet/ca-agent-skills) 处理 CA 相关事情，不能指望 AI 自己隐式推断。
 - `CA` 是默认推荐路径，因为当前活动奖励更高。

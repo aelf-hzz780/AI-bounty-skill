@@ -70,3 +70,20 @@
 - explain that the current signer is not a valid manager on `tDVV`
 - tell the user to switch to a valid manager signer
 - stop without retrying blindly
+
+## Example 5: RPC Root Returns 404
+
+### User Input
+
+- English: `the RPC root URL returns 404, so the tDVV node must be down`
+- 中文: `tdvv-public-node.aelf.io 直接访问是 404，所以节点应该挂了`
+
+### Agent Should Choose
+
+- `Diagnostics And Stop`
+
+### Correct Output Shape
+
+- explain that the RPC root URL returning `404` is not enough to prove the node is down
+- tell the user to validate the node with `https://tdvv-public-node.aelf.io/api/blockChain/chainStatus`
+- only treat RPC access as failed if `/api/blockChain/chainStatus` cannot be reached

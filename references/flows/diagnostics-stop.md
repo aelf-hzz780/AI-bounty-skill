@@ -9,6 +9,7 @@ Use this flow for any blocker that makes the signer or claim path invalid:
 - exchange address, custodial address, or no private key
 - user asks the agent to create or hold a wallet
 - user refuses to choose between `CA` and `EOA`
+- `/api/blockChain/chainStatus` cannot be reached
 - mainnet Portkey CA exists but cannot be resolved on `tDVV`
 - guardian already exists and recovery is still required
 - a contract call already failed and the prerequisite remains unresolved
@@ -46,6 +47,12 @@ Use this flow for any blocker that makes the signer or claim path invalid:
 - Reason: the chain already returned a concrete failure.
 - Next action: return the exact error and map it to the missing prerequisite.
 - Hard stop: do not retry blindly.
+
+### RPC Validation Failed
+
+- Reason: the correct RPC validation endpoint `/api/blockChain/chainStatus` could not be reached.
+- Next action: verify `https://tdvv-public-node.aelf.io/api/blockChain/chainStatus` directly before asking for a replacement RPC.
+- Hard stop: do not conclude the node is down only because the RPC root URL returns `404`.
 
 ## Error Mapping
 

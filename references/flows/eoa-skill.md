@@ -27,21 +27,23 @@ Use this flow only when all conditions below are true:
 ## Step-By-Step
 
 1. Tell the user not to fill exchange or custodial addresses.
-2. Use the Portkey EOA skill dependency to resolve the active signer from the local EOA account context.
-3. If the resolved address is exchange-managed, custodial, or signer ownership is unclear, stop and switch to [diagnostics-stop.md](./diagnostics-stop.md).
-4. Check that the claim contract is currently claimable on `tDVV`.
-5. Check that the resolved local EOA address has not already claimed.
-6. Show the write summary:
+2. Validate the `tDVV` RPC through `https://tdvv-public-node.aelf.io/api/blockChain/chainStatus`.
+3. Use the Portkey EOA skill dependency to resolve the active signer from the local EOA account context.
+4. If the resolved address is exchange-managed, custodial, or signer ownership is unclear, stop and switch to [diagnostics-stop.md](./diagnostics-stop.md).
+5. Check that the claim contract is currently claimable on `tDVV`.
+6. Check that the resolved local EOA address has not already claimed.
+7. Show the write summary:
    - signer address
    - contract address
    - method `Claim()`
    - receiver semantics `reward goes to Context.Sender`
    - source of signer `resolved from local EOA account`
    - expected reward `1 token` in the current campaign
-7. Ask for explicit confirmation.
-8. Only after explicit confirmation, send `Claim()`.
-9. Report the `txid` and the exact chain result.
-10. If the transaction fails, surface the original error and stop.
+   - RPC validation endpoint `https://tdvv-public-node.aelf.io/api/blockChain/chainStatus`
+8. Ask for explicit confirmation.
+9. Only after explicit confirmation, send `Claim()`.
+10. Report the `txid` and the exact chain result.
+11. If the transaction fails, surface the original error and stop.
 
 ## Must-Stop Conditions
 
@@ -52,6 +54,7 @@ Stop immediately if any of the following is true:
 - the address has already claimed
 - the user asks for `ca_hash` handling in this branch
 - no local EOA account can be resolved
+- `/api/blockChain/chainStatus` cannot be reached
 
 ## Output Shape
 
