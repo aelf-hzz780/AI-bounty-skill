@@ -4,7 +4,7 @@
 
 这是一个公开 skill 仓库，用于在 `aelf` 的 `tDVV` 主网侧链环境中，通过 `RewardClaimContract` 领取 AI bounty。
 
-对 AA/CA 来说，标准领取路径是 reward 合约的 permissionless `ClaimByPortkeyToCa(Hash ca_hash)`。
+对 AA/CA 来说，标准领取路径是 `manager signer -> CA.ManagerForwardCall -> reward.ClaimByPortkeyToCa(Hash ca_hash)`。
 
 ## 仓库结构
 
@@ -19,7 +19,7 @@
 当前 skill 只支持以下公开领取路径：
 
 - `EOA`：`Claim()`
-- `AA/CA`：`ClaimByPortkeyToCa(Hash ca_hash)`
+- `AA/CA`：`ManagerForwardCall(...) -> ClaimByPortkeyToCa(Hash ca_hash)`
 
 ## 路由分支
 
@@ -33,9 +33,10 @@
 - 规范版本号以 [SKILL.md](./SKILL.md) 里的 `version` 字段为准。外部用户或 agent 反馈行为异常时，应先回报这个版本号。
 - `tDVV` 在本仓库中按当前 AI bounty 的主网侧链环境描述。
 - 当前活动默认奖励写法为：AA/CA `2 AIBOUNTY`，EOA `1 AIBOUNTY`。
-- AA/CA 应按 reward 合约的 permissionless `ClaimByPortkeyToCa(Hash ca_hash)` 路径发送。
-- 对 AA/CA 的 SDK 或 helper 调用，如要求 raw address，应优先使用 reward raw 地址；只有在单独查询 holder 或解析 `caHash` 时才使用 CA raw 地址。
-- 如果当前只知道邮箱而不知道 `caHash`，应先解析目标 `caHash`，只有在无法直接解析时才走 recover/login。
+- AA/CA 应按标准 wallet path `manager signer -> CA.ManagerForwardCall -> reward.ClaimByPortkeyToCa(Hash ca_hash)` 发送。
+- `ClaimByPortkeyToCa(Hash ca_hash)` 在 reward 方法层是 permissionless，但奖励仍然进入 `caHash -> caAddress`，不会进入 manager signer。
+- 对 AA/CA 的 SDK 或 helper 调用，如要求 raw address，应使用 raw CA/reward 地址，不要直接传 `ELF_..._tDVV` 包装地址。
+- 如果当前只知道邮箱而不知道 `caHash`，应先恢复本地 `tDVV` 上的 AA/CA 上下文；如本地上下文未就绪，再通过 recover/login 获取可用的 manager signer 和 `caHash`。
 - 当前环境下的 Gas 规则应说明清楚：`AA/CA` 在手续费不足时可能享受每日价值 `1 ELF` 的补贴；`AA/CA` 或 `EOA` 在链上账户有 `10 ELF` 时也可能享受每日价值 `1 ELF` 的补贴；`EOA` 没有足够 `ELF` 时不得继续发送 `Claim()`。
 - 如果 `EOA` 无法获得足够的 `ELF`，应明确建议切换到 `AA/CA`。
 - 校验 RPC 是否可用时，应请求 [chainStatus](https://tdvv-public-node.aelf.io/api/blockChain/chainStatus)，不要用 RPC 根路径是否返回 `404` 来判断节点挂了。

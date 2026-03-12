@@ -127,12 +127,12 @@
 - explain that node introspection must use the normalized contract address format, not the wrapped `ELF_..._tDVV` address string
 - tell the user to keep the canonical reward contract and supported write methods already defined by the skill unless a verified source disproves them
 
-## Example 8: Reward Goes To The Resolved AA/CA
+## Example 8: Reward Still Goes To The AA/CA Address
 
 ### User Input
 
-- English: `if another address pays gas for ClaimByPortkeyToCa, does the reward go to that sender?`
-- 中文: `如果是另一个地址代付 gas 去调用 ClaimByPortkeyToCa，奖励会发给那个发送方吗？`
+- English: `if my manager signer sends ManagerForwardCall for ClaimByPortkeyToCa, does the reward go to that manager signer?`
+- 中文: `如果我的 manager signer 发起 ManagerForwardCall 去调用 ClaimByPortkeyToCa，奖励会发给这个 manager signer 吗？`
 
 ### Agent Should Choose
 
@@ -140,9 +140,9 @@
 
 ### Correct Output Shape
 
-- explain that `ClaimByPortkeyToCa` can be sent by any gas payer or relayer as long as the `caHash` is valid
-- explain that the reward goes to the AA/CA address resolved from that `caHash`, not to the gas payer or relayer
-- tell the user to verify the target `caHash` and claim status instead of focusing on who paid gas
+- explain that the standard AA/CA wallet path is `ManagerForwardCall(...) -> ClaimByPortkeyToCa(Hash ca_hash)`
+- explain that the reward goes to the AA/CA address resolved from that `caHash`, not to the manager signer
+- tell the user to verify the target `caHash` and local AA/CA context instead of focusing on sender payout
 - stop if the user still cannot provide or resolve the correct `caHash`
 
 ## Example 9: Wrapped Address And Wrong `caHash` Encoding
@@ -158,7 +158,7 @@
 
 ### Correct Output Shape
 
-- explain that some SDK and helper calls require raw addresses such as `2fc5...`, not wrapped `ELF_..._tDVV` addresses
+- explain that some SDK and helper calls require raw CA or reward addresses such as `2Uth...` and `2fc5...`, not wrapped `ELF_..._tDVV` addresses
 - explain that `ClaimByPortkeyToCa` expects `.aelf.Hash`, not a plain string
 - tell the user to encode the forwarded args as `args: { value: Buffer.from(caHash, "hex") }`
 - if descriptor-based encoding is involved, remind the user to call `root.resolveAll()` before resolving the method or encoding params

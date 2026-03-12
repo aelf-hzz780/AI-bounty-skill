@@ -58,7 +58,7 @@ Use this flow for any blocker that makes the signer or claim path invalid:
 - Reason: the signer does not have enough `ELF` or available gas subsidy to pay the transaction fee.
 - Next action for `EOA`: tell the user to get `ELF` transferred in, either from another wallet or from an exchange withdrawal, before retrying `Claim()`.
 - Next action for `EOA` if getting `ELF` is not feasible: recommend switching to `AA/CA`, remind them that `AA/CA` gets `2 AIBOUNTY` in the current campaign, and repeat that `AA/CA` has a smoother gas experience in the current environment.
-- Next action for `AA/CA`: tell the user to confirm whether the current daily subsidy conditions are satisfied; if not, they still need additional `ELF`.
+- Next action for `AA/CA`: tell the user to confirm whether the current manager signer has usable subsidy or enough `ELF`; if not, they still need additional `ELF`.
 - Hard stop: do not misclassify `Transaction fee not enough` as an RPC failure or a claim logic failure.
 
 ### Transaction Status Still Pending
@@ -81,14 +81,14 @@ Use this flow for any blocker that makes the signer or claim path invalid:
 
 ### Wrapped Address Used Where Raw Address Is Required
 
-- Reason: some SDK and helper calls expect raw addresses such as `2fc5...`, not wrapped addresses such as `ELF_2fc5..._tDVV`.
+- Reason: some SDK and helper calls expect raw CA or reward addresses such as `2Uth...` or `2fc5...`, not wrapped addresses such as `ELF_..._tDVV`.
 - Next action: strip the wrapped address into the raw address format before calling SDK helpers, payload encoders, or node introspection APIs that require raw addresses.
 - Hard stop: do not assume the wrapped address will be normalized automatically.
 
 ### Wrong `caHash` Parameter Encoding
 
 - Reason: `ClaimByPortkeyToCa` expects `.aelf.Hash`, not a plain string or an arbitrary object shape.
-- Next action: encode the forwarded args as `args: { value: Buffer.from(caHash, "hex") }`.
+- Next action: encode the forwarded args for `ManagerForwardCall` as `args: { value: Buffer.from(caHash, "hex") }`.
 - Hard stop: do not retry with a string `caHash` payload.
 
 ### Descriptor Not Fully Resolved
@@ -99,14 +99,16 @@ Use this flow for any blocker that makes the signer or claim path invalid:
 
 ## AA/CA Troubleshooting Notes
 
-- For AA/CA claims, the gas payer or relayer can be any address, but the reward still goes to the resolved AA/CA address.
-- Do not tell the user that manager identity is the blocker for `ClaimByPortkeyToCa`; focus on `caHash` validity, claim state, fee readiness, and RPC reachability.
-- The `ClaimByPortkeyToCa` input must be `.aelf.Hash`, not `string`.
+- The standard AA/CA wallet path in this skill is `ManagerForwardCall(...) -> ClaimByPortkeyToCa(Hash ca_hash)`.
+- `ClaimByPortkeyToCa(Hash ca_hash)` is permissionless at the reward method layer, but the forwarded reward still goes to the resolved AA/CA address rather than the manager signer.
+- If a forwarded AA/CA transaction hits a raw manager-mismatch error, do not lead with that raw error text to the user; instead focus on restoring the local AA/CA context on `tDVV`.
+- The forwarded `ClaimByPortkeyToCa` input must be `.aelf.Hash`, not `string`.
 - `NOTEXISTED` only means the transaction is not confirmed yet; it is not a final result.
-- A successful direct AA/CA claim often emits `PortkeyClaimedToCa` and `Transferred`. If the request was wrapped through another contract path, additional events may also appear.
+- A successful forwarded AA/CA claim often emits `VirtualTransactionCreated`, `PortkeyClaimedToCa`, and `Transferred`.
 
 ## Error Mapping
 
+- `Sender is not a manager of the CA holder.` -> the local AA/CA manager context is not ready on `tDVV`; ask the user to recover or re-login and do not lead with the raw manager error text
 - `CA holder not found.` -> `caHash` is missing or not valid on `tDVV`
 - `Address has already claimed.` -> the EOA path is already consumed
 - `CA hash has already claimed.` -> the AA/CA path is already consumed

@@ -4,7 +4,7 @@
 
 This public repository contains a single skill for claiming the AI bounty on the `aelf` `tDVV` mainnet sidechain through `RewardClaimContract`.
 
-For AA/CA, the canonical claim path is the reward contract's permissionless `ClaimByPortkeyToCa(Hash ca_hash)`.
+For AA/CA, the canonical claim path is `manager signer -> CA.ManagerForwardCall -> reward.ClaimByPortkeyToCa(Hash ca_hash)`.
 
 ## Repository Design
 
@@ -19,7 +19,7 @@ The repository uses a single entry skill plus focused branch references so weake
 This skill supports only the current public claim paths:
 
 - `EOA`: `Claim()`
-- `AA/CA`: `ClaimByPortkeyToCa(Hash ca_hash)`
+- `AA/CA`: `ManagerForwardCall(...) -> ClaimByPortkeyToCa(Hash ca_hash)`
 
 ## Routing Branches
 
@@ -33,9 +33,10 @@ This skill supports only the current public claim paths:
 - The canonical skill version is the `version` field in [SKILL.md](./SKILL.md). Ask external users or agents to report that value first when behavior looks inconsistent.
 - `tDVV` is documented here as the current AI bounty mainnet sidechain environment.
 - Current campaign default reward amounts are documented as `2 AIBOUNTY` for AA/CA and `1 AIBOUNTY` for EOA.
-- AA/CA claims should use the reward contract's permissionless `ClaimByPortkeyToCa(Hash ca_hash)`.
-- For AA/CA SDK or helper calls that require raw addresses, use the reward raw address, and use the CA raw address only when separately resolving holder info or `caHash`.
-- If only an email is known for AA/CA, the agent should resolve the target `caHash` first, and use recovery or login only when direct resolution is not possible.
+- AA/CA claims should use the standard wallet path `manager signer -> CA.ManagerForwardCall -> reward.ClaimByPortkeyToCa(Hash ca_hash)`.
+- `ClaimByPortkeyToCa(Hash ca_hash)` is permissionless at the reward method layer, but the reward still goes to the resolved `caHash -> caAddress`, not to the manager signer.
+- For AA/CA SDK or helper calls that require raw addresses, use raw CA and reward addresses instead of wrapped `ELF_..._tDVV` addresses.
+- If only an email is known for AA/CA, the agent should restore the local AA/CA context on `tDVV` and use recovery or login when needed to obtain a valid manager signer and `caHash`.
 - Current environment gas rules are documented as daily subsidy behavior around `1 ELF`, with `AA/CA` usually having a smoother gas experience and `EOA` requiring sufficient `ELF` before sending `Claim()`.
 - If `EOA` cannot obtain enough `ELF`, the agent should recommend switching to `AA/CA`.
 - Validate RPC reachability with [chainStatus](https://tdvv-public-node.aelf.io/api/blockChain/chainStatus), not by requesting the RPC root URL.
