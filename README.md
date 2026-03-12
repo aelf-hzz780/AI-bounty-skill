@@ -4,6 +4,8 @@
 
 This public repository contains a single skill for claiming the AI bounty on the `aelf` `tDVV` mainnet sidechain through `RewardClaimContract`.
 
+For AA/CA, the canonical claim path is forwarded through the Portkey CA contract with `ManagerForwardCall`, not a direct manager-signed write to the reward contract.
+
 ## Repository Design
 
 The repository uses a single entry skill plus focused branch references so weaker agents can follow one route at a time.
@@ -14,10 +16,10 @@ The repository uses a single entry skill plus focused branch references so weake
 
 ## Supported Claim Paths
 
-This skill supports only the current public claim methods:
+This skill supports only the current public claim paths:
 
-- `Claim()`
-- `ClaimByPortkeyToCa(Hash ca_hash)`
+- `EOA`: `Claim()`
+- `AA/CA`: `ManagerForwardCall(...) -> ClaimByPortkeyToCa(Hash ca_hash)`
 
 ## Routing Branches
 
@@ -31,6 +33,9 @@ This skill supports only the current public claim methods:
 - The canonical skill version is the `version` field in [SKILL.md](./SKILL.md). Ask external users or agents to report that value first when behavior looks inconsistent.
 - `tDVV` is documented here as the current AI bounty mainnet sidechain environment.
 - Current campaign default reward amounts are documented as `2 AIBOUNTY` for AA/CA and `1 AIBOUNTY` for EOA.
+- AA/CA claims should be sent as `manager signer -> CA.ManagerForwardCall -> reward.ClaimByPortkeyToCa(Hash ca_hash)`.
+- For AA/CA SDK or helper calls, use raw CA and reward addresses instead of wrapped `ELF_..._tDVV` addresses.
+- If only an email is known for AA/CA, the agent should recover or login first, obtain the valid manager signer and `caHash`, then continue the claim.
 - Current environment gas rules are documented as daily subsidy behavior around `1 ELF`, with `AA/CA` usually having a smoother gas experience and `EOA` requiring sufficient `ELF` before sending `Claim()`.
 - If `EOA` cannot obtain enough `ELF`, the agent should recommend switching to `AA/CA`.
 - Validate RPC reachability with [chainStatus](https://tdvv-public-node.aelf.io/api/blockChain/chainStatus), not by requesting the RPC root URL.

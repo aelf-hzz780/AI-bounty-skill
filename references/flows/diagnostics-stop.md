@@ -12,6 +12,10 @@ Use this flow for any blocker that makes the signer or claim path invalid:
 - `/api/blockChain/chainStatus` cannot be reached
 - insufficient transaction fee or no available `ELF`
 - write methods were misread from a view-only contract introspection result
+- AA/CA write was attempted directly against the reward contract instead of through `CA.ManagerForwardCall`
+- a wrapped `ELF_..._tDVV` address was passed into an SDK or helper that expects a raw address
+- `caHash` was encoded as a string or otherwise not encoded as `.aelf.Hash`
+- descriptor-based encoding was attempted without `root.resolveAll()`
 - mainnet Portkey AA/CA exists but cannot be resolved on `tDVV`
 - guardian already exists and recovery is still required
 - a contract call already failed and the prerequisite remains unresolved
@@ -36,7 +40,7 @@ Use this flow for any blocker that makes the signer or claim path invalid:
 
 - Reason: the bounty claim requires holder and manager resolution on `tDVV`, not only on another network view.
 - Next action: ask the user to recover or re-establish the Portkey AA/CA context that is queryable on `tDVV`.
-- Hard stop: do not guess or fabricate `ca_hash`.
+- Hard stop: do not guess or fabricate `caHash`.
 
 ### Guardian Already Exists And Recovery Is Required
 
@@ -49,6 +53,12 @@ Use this flow for any blocker that makes the signer or claim path invalid:
 - Reason: the chain already returned a concrete failure.
 - Next action: return the exact error and map it to the missing prerequisite.
 - Hard stop: do not retry blindly.
+
+### Wrong AA/CA Write Path
+
+- Reason: the AA/CA claim path must use `manager signer -> CA.ManagerForwardCall -> reward.ClaimByPortkeyToCa`, not a direct manager-signed write to the reward contract.
+- Next action: switch back to the canonical forwarded AA/CA path and verify the manager relationship again before retrying.
+- Hard stop: do not keep retrying a direct reward-contract write from the manager signer.
 
 ### Insufficient Transaction Fee
 
@@ -76,10 +86,35 @@ Use this flow for any blocker that makes the signer or claim path invalid:
 - Next action: if full method verification is still needed, use `/api/blockChain/contractFileDescriptorSet` as an optional verification path and normalize the contract address into the endpoint's accepted format first.
 - Hard stop: if introspection stays ambiguous or returns `Not found` because of address format issues, keep the canonical reward contract address and supported methods defined in this skill instead of redirecting to a different contract.
 
+### Wrapped Address Used Where Raw Address Is Required
+
+- Reason: some SDK and helper calls expect raw addresses such as `2fc5...`, not wrapped addresses such as `ELF_2fc5..._tDVV`.
+- Next action: strip the wrapped address into the raw address format before calling SDK helpers, payload encoders, or node introspection APIs that require raw addresses.
+- Hard stop: do not assume the wrapped address will be normalized automatically.
+
+### Wrong `caHash` Parameter Encoding
+
+- Reason: `ClaimByPortkeyToCa` expects `.aelf.Hash`, not a plain string or an arbitrary object shape.
+- Next action: encode the forwarded args as `args: { value: Buffer.from(caHash, "hex") }`.
+- Hard stop: do not retry with a string `caHash` payload.
+
+### Descriptor Not Fully Resolved
+
+- Reason: some contract method lookups and protobuf encoders fail if the descriptor tree is not fully resolved first.
+- Next action: call `root.resolveAll()` before resolving the target method or encoding its params.
+- Hard stop: do not treat descriptor lookup failure as proof that the claim method does not exist.
+
+## AA/CA Troubleshooting Notes
+
+- For AA/CA claims, the manager signer is the transaction sender, but the reward still goes to the resolved AA/CA address.
+- The forwarded reward method input must be `.aelf.Hash`, not `string`.
+- `NOTEXISTED` only means the transaction is not confirmed yet; it is not a final result.
+- A successful forwarded AA/CA claim often emits `VirtualTransactionCreated`, `PortkeyClaimedToCa`, and `Transferred`.
+
 ## Error Mapping
 
 - `Sender is not a manager of the CA holder.` -> the current signer is not valid for this AA/CA on `tDVV`
-- `CA holder not found.` -> `ca_hash` is missing or not valid on `tDVV`
+- `CA holder not found.` -> `caHash` is missing or not valid on `tDVV`
 - `Address has already claimed.` -> the EOA path is already consumed
 - `CA hash has already claimed.` -> the AA/CA path is already consumed
 - `Transaction fee not enough.` -> the signer has insufficient fee balance or no usable gas subsidy

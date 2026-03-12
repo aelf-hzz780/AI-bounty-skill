@@ -4,6 +4,8 @@
 
 这是一个公开 skill 仓库，用于在 `aelf` 的 `tDVV` 主网侧链环境中，通过 `RewardClaimContract` 领取 AI bounty。
 
+对 AA/CA 来说，标准领取路径是通过 Portkey CA 合约的 `ManagerForwardCall` 转发，而不是让 manager 直接对 reward 合约发起写调用。
+
 ## 仓库结构
 
 仓库采用“单入口 skill + 分支参考文档”的结构，方便较弱的 agent 一次只跟随一条路径。
@@ -14,10 +16,10 @@
 
 ## 支持的方法
 
-当前 skill 只支持以下公开领取方法：
+当前 skill 只支持以下公开领取路径：
 
-- `Claim()`
-- `ClaimByPortkeyToCa(Hash ca_hash)`
+- `EOA`：`Claim()`
+- `AA/CA`：`ManagerForwardCall(...) -> ClaimByPortkeyToCa(Hash ca_hash)`
 
 ## 路由分支
 
@@ -31,6 +33,9 @@
 - 规范版本号以 [SKILL.md](./SKILL.md) 里的 `version` 字段为准。外部用户或 agent 反馈行为异常时，应先回报这个版本号。
 - `tDVV` 在本仓库中按当前 AI bounty 的主网侧链环境描述。
 - 当前活动默认奖励写法为：AA/CA `2 AIBOUNTY`，EOA `1 AIBOUNTY`。
+- AA/CA 应按 `manager signer -> CA.ManagerForwardCall -> reward.ClaimByPortkeyToCa(Hash ca_hash)` 的路径发送。
+- 对 AA/CA 的 SDK 或 helper 调用，应使用 raw CA/reward 地址，不要直接传 `ELF_..._tDVV` 包装地址。
+- 如果当前只知道邮箱而不知道 `caHash`，应先做 recover/login，拿到有效 manager signer 和 `caHash` 后再继续 claim。
 - 当前环境下的 Gas 规则应说明清楚：`AA/CA` 在手续费不足时可能享受每日价值 `1 ELF` 的补贴；`AA/CA` 或 `EOA` 在链上账户有 `10 ELF` 时也可能享受每日价值 `1 ELF` 的补贴；`EOA` 没有足够 `ELF` 时不得继续发送 `Claim()`。
 - 如果 `EOA` 无法获得足够的 `ELF`，应明确建议切换到 `AA/CA`。
 - 校验 RPC 是否可用时，应请求 [chainStatus](https://tdvv-public-node.aelf.io/api/blockChain/chainStatus)，不要用 RPC 根路径是否返回 `404` 来判断节点挂了。

@@ -34,7 +34,7 @@
 - explain that the bounty flow requires holder and manager resolution on `tDVV`
 - explain that the current prerequisite is not met
 - tell the user to recover or re-establish the Portkey AA/CA context on `tDVV` first
-- stop without guessing `ca_hash`
+- stop without guessing `caHash`
 
 ## Example 3: Guardian Already Exists
 
@@ -126,3 +126,39 @@
 - if full method verification is still needed, tell the user to use `/api/blockChain/contractFileDescriptorSet` as an optional verification path
 - explain that node introspection must use the normalized contract address format, not the wrapped `ELF_..._tDVV` address string
 - tell the user to keep the canonical reward contract and supported write methods already defined by the skill unless a verified source disproves them
+
+## Example 8: Direct AA/CA Write To Reward Contract
+
+### User Input
+
+- English: `I already used the manager private key to call ClaimByPortkeyToCa directly on the reward contract. Why did that path fail?`
+- 中文: `我已经直接用 manager 私钥去调 reward 合约上的 ClaimByPortkeyToCa 了，这条路径为什么不对？`
+
+### Agent Should Choose
+
+- `Diagnostics And Stop`
+
+### Correct Output Shape
+
+- explain that the AA/CA claim path must be `manager signer -> CA.ManagerForwardCall -> reward.ClaimByPortkeyToCa`
+- explain that the manager should not directly sign the reward contract write for this flow
+- tell the user to switch back to the canonical forwarded AA/CA path
+- stop without recommending another blind retry on the direct reward-contract call
+
+## Example 9: Wrapped Address And Wrong `caHash` Encoding
+
+### User Input
+
+- English: `I passed ELF_..._tDVV into the SDK and sent caHash as a string. Could that be the problem?`
+- 中文: `我把 ELF_..._tDVV 包装地址直接传给 SDK 了，而且把 caHash 当字符串发了，这会是问题吗？`
+
+### Agent Should Choose
+
+- `Diagnostics And Stop`
+
+### Correct Output Shape
+
+- explain that some SDK and helper calls require raw addresses such as `2fc5...`, not wrapped `ELF_..._tDVV` addresses
+- explain that `ClaimByPortkeyToCa` expects `.aelf.Hash`, not a plain string
+- tell the user to encode the forwarded args as `args: { value: Buffer.from(caHash, "hex") }`
+- if descriptor-based encoding is involved, remind the user to call `root.resolveAll()` before resolving the method or encoding params
