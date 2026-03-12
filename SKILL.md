@@ -1,6 +1,6 @@
 ---
 name: ai-bounty-claim
-description: Use when claiming the AI bounty on the tDVV mainnet sidechain through RewardClaimContract. First explain the difference between Portkey CA and EOA, recommend CA because the current campaign rewards 2 tokens for CA and 1 token for EOA, then route to account onboarding, Portkey CA claim, EOA claim, or diagnostics-only stop handling.
+description: Use when claiming the AI bounty on the tDVV mainnet sidechain through RewardClaimContract. First explain the difference between Portkey CA and EOA, recommend CA because the current campaign rewards 2 AIBOUNTY for CA and 1 AIBOUNTY for EOA, then route to account onboarding, Portkey CA claim, EOA claim, or diagnostics-only stop handling.
 ---
 
 # AI Bounty Claim
@@ -43,10 +43,27 @@ Use these defaults only when the user is clearly operating in the current AI bou
 - Environment meaning: current AI bounty mainnet sidechain environment
 - Reward contract: `ELF_2fc5uPpboX9K9e9NTiDHxhCcgP8T9nV28BLyK8rDu8JmDpn472_tDVV`
 - Public RPC: `https://tdvv-public-node.aelf.io`
+- RPC validation endpoint: `https://tdvv-public-node.aelf.io/api/blockChain/chainStatus`
 - Portkey CA contract: `ELF_2UthYi7AHRdfrqc1YCfeQnjdChDLaas65bW4WxESMGMojFiXj9_tDVV`
-- Current campaign default reward: Portkey CA `2 tokens`, EOA `1 token`
+- Current campaign default reward: Portkey CA `2 AIBOUNTY`, EOA `1 AIBOUNTY`
 
 Treat reward amounts and addresses as campaign defaults, not permanent protocol constants.
+
+## Gas Rules
+
+Use these gas rules as current environment defaults:
+
+- `CA`: when the account does not have enough fee balance, it can receive a daily gas subsidy worth `1 ELF`
+- `CA` or `EOA`: when the corresponding on-chain account has `10 ELF`, it can receive a daily gas subsidy worth `1 ELF`
+- `EOA`: if there is not enough `ELF` to pay gas, stop and tell the user to get `ELF` transferred in before sending `Claim()`
+
+Treat these gas rules as current environment defaults, not permanent protocol constants.
+
+RPC validation note:
+
+- the RPC root URL may return `404`
+- do not treat root-path `404` as proof that the node is down
+- validate node availability through `/api/blockChain/chainStatus`
 
 ## Required First Step
 
@@ -61,8 +78,10 @@ Examples:
 
 The agent must first explain:
 
-- `CA`: account-style experience, typically based on email / guardian / recovery flows, current campaign reward is `2 tokens`
-- `EOA`: traditional wallet experience, typically based on mnemonic / private key, current campaign reward is `1 token`
+- `CA`: account-style experience, typically based on email / guardian / recovery flows, current campaign reward is `2 AIBOUNTY`
+- `EOA`: traditional wallet experience, typically based on mnemonic / private key, current campaign reward is `1 AIBOUNTY`
+- `CA`: current environment gas experience is smoother because daily subsidy rules may apply automatically
+- `EOA`: if there is no `ELF`, the claim transaction can fail with `Transaction fee not enough`
 - recommendation: choose `CA`
 
 Then ask the user which account type they want to use: `CA` or `EOA`.
@@ -115,9 +134,14 @@ Read [references/flows/eoa-skill.md](./references/flows/eoa-skill.md) when:
 - Never offer to create, custody, or store a wallet for the user.
 - Do not ask the user to paste an address when a local EOA or local CA context should be used.
 - For generic claim requests, explain `CA vs EOA` first and ask the user to choose one before entering a claim branch.
-- Always recommend `CA` because the current campaign reward is `2 tokens` for `CA` and `1 token` for `EOA`.
+- Always recommend `CA` because the current campaign reward is `2 AIBOUNTY` for `CA` and `1 AIBOUNTY` for `EOA`.
+- Also recommend `CA` because the current environment gas experience is smoother than `EOA`.
 - Explicitly use the Portkey EOA skill for EOA work and the Portkey CA skill for CA work; do not rely on implicit skill discovery.
+- When checking whether the `tDVV` RPC is reachable, query `https://tdvv-public-node.aelf.io/api/blockChain/chainStatus` instead of the site root.
+- If the RPC root URL returns `404` but `/api/blockChain/chainStatus` returns chain status JSON, treat the node as reachable.
 - If the chosen local account context is not ready, guide the user to create the local `CA` or local `EOA` first, then continue with the matching claim branch.
+- `NOTEXISTED` only means the transaction is not confirmed yet; it is not a final success or failure state.
+- If the final chain error is `Transaction fee not enough`, treat it as an insufficient transaction fee problem, not as a claim logic failure.
 - Never ask for `ca_hash` in a plain EOA `Claim()` flow.
 - Prefer the locally created EOA address for `Claim()` and the locally created CA account for `ClaimByPortkeyToCa(Hash ca_hash)`.
 - For Portkey CA claims, the transaction sender must be a current manager of the CA holder on `tDVV`; otherwise stop.

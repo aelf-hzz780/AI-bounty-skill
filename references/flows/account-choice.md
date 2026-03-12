@@ -15,8 +15,10 @@ Use this flow when any of the following is true:
 
 The agent must first explain:
 
-- `CA`: account-style experience, usually based on email / guardian / recovery flows, current campaign reward is `2 tokens`
-- `EOA`: traditional wallet experience, usually based on mnemonic / private key, current campaign reward is `1 token`
+- `CA`: account-style experience, usually based on email / guardian / recovery flows, current campaign reward is `2 AIBOUNTY`
+- `EOA`: traditional wallet experience, usually based on mnemonic / private key, current campaign reward is `1 AIBOUNTY`
+- `CA`: when fee balance is insufficient, the current environment may provide a daily gas subsidy worth `1 ELF`
+- `EOA`: if there is not enough `ELF`, the claim transaction can fail with `Transaction fee not enough`
 - recommendation: choose `CA`
 
 Then ask:
@@ -27,7 +29,7 @@ Then ask:
 
 1. Tell the user not to fill exchange or custodial addresses.
 2. Explain the difference between `CA` and `EOA` using the required explanation above.
-3. Recommend `CA` because the current campaign reward is `2 tokens`, while `EOA` gets `1 token`.
+3. Recommend `CA` because the current campaign reward is `2 AIBOUNTY`, while `EOA` gets `1 AIBOUNTY`, and because `CA` has a smoother gas experience in the current environment.
 4. Ask the user to choose `CA` or `EOA`.
 5. If the user chooses `CA` and a local CA account is already available, use the Portkey CA skill dependency, then switch to [portkey-ca.md](./portkey-ca.md).
 6. If the user chooses `CA` but no local CA account is ready, guide the user to create or recover a local Portkey CA account first:
@@ -41,7 +43,8 @@ Then ask:
    - use the Portkey EOA skill dependency
    - use mnemonic / private key style account semantics
    - make sure the signer is locally available
-   - make sure the user understands EOA only gets `1 token` in the current campaign
+   - make sure the user understands EOA only gets `1 AIBOUNTY` in the current campaign
+   - make sure the user understands EOA must have enough `ELF` to pay gas before sending `Claim()`
 10. After the local EOA account is ready, use the Portkey EOA skill dependency, then switch to [eoa-skill.md](./eoa-skill.md).
 
 ## Must-Stop Conditions

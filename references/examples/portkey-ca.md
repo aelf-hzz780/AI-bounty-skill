@@ -30,5 +30,5 @@
 
 - identify the branch as Portkey CA
 - tell the user not to fill exchange addresses
-- show manager signer, `ca_hash`, contract, method, receiver semantics, signer source as local CA account, and `2 tokens` current campaign reward
+- show manager signer, `ca_hash`, contract, method, receiver semantics, signer source as local CA account, and `2 AIBOUNTY` current campaign reward
 - ask for explicit confirmation before sending

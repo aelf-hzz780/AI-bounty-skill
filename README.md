@@ -29,9 +29,12 @@ This skill supports only the current public claim methods:
 ## Shared Rules
 
 - `tDVV` is documented here as the current AI bounty mainnet sidechain environment.
-- Current campaign default reward amounts are documented as `2 tokens` for CA and `1 token` for EOA.
+- Current campaign default reward amounts are documented as `2 AIBOUNTY` for CA and `1 AIBOUNTY` for EOA.
+- Current environment gas rules are documented as daily subsidy behavior around `1 ELF`, with `EOA` requiring sufficient `ELF` before sending `Claim()`.
+- Validate RPC reachability with [chainStatus](https://tdvv-public-node.aelf.io/api/blockChain/chainStatus), not by requesting the RPC root URL.
 - For generic claim requests, the agent must first explain `CA vs EOA`, recommend `CA`, and ask which one the user wants to use.
 - `CA` is the recommended default because the current campaign reward is higher.
+- `CA` is also recommended because its gas experience is smoother in the current environment.
 - The skill should explicitly use [Portkey EOA skill](https://github.com/Portkey-Wallet/eoa-agent-skills) for EOA handling and [Portkey CA skill](https://github.com/Portkey-Wallet/ca-agent-skills) for CA handling.
 - The agent should tell users not to fill exchange or custodial addresses.
 - The agent should use the local EOA address or local CA account context instead of asking the user to paste an address.
