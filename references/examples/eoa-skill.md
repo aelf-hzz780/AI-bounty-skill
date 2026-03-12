@@ -25,10 +25,29 @@
 - signer turns out to be exchange-managed
 - signer ownership is unclear
 - address has already claimed
+- the local EOA does not have enough `ELF` to pay gas
 
 ## Correct Output Shape
 
 - identify the branch as EOA
 - tell the user not to fill exchange addresses
 - show signer, contract, method, receiver semantics, signer source as local EOA account, and `1 AIBOUNTY` current campaign reward
+- show the gas prerequisite clearly before sending
 - ask for explicit confirmation before sending
+
+## Example 2: EOA Has No ELF For Gas
+
+### User Input
+
+- English: `I chose EOA and sent the claim, but the new wallet has no ELF for gas`
+- 中文: `我选了 EOA 去领取，但新钱包里没有 ELF 支付手续费`
+
+### Agent Should Choose
+
+- `Diagnostics And Stop`
+
+### Correct Output Shape
+
+- explain that the problem is insufficient transaction fee, not claim logic
+- explain that `EOA` needs enough `ELF` before sending `Claim()`
+- tell the user to get `ELF` transferred in before retrying

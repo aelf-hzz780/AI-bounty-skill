@@ -30,10 +30,12 @@
 
 - `tDVV` 在本仓库中按当前 AI bounty 的主网侧链环境描述。
 - 当前活动默认奖励写法为：CA `2 AIBOUNTY`，EOA `1 AIBOUNTY`。
+- 当前环境下的 Gas 规则应说明清楚：`CA` 在手续费不足时可能享受每日价值 `1 ELF` 的补贴；`CA` 或 `EOA` 在链上账户有 `10 ELF` 时也可能享受每日价值 `1 ELF` 的补贴；`EOA` 没有足够 `ELF` 时不得继续发送 `Claim()`。
 - 校验 RPC 是否可用时，应请求 [chainStatus](https://tdvv-public-node.aelf.io/api/blockChain/chainStatus)，不要用 RPC 根路径是否返回 `404` 来判断节点挂了。
 - 对未明确账户类型的泛化 claim 诉求，必须先解释 `CA` 和 `EOA` 的区别，推荐 `CA`，再让用户选择。
 - 必须显式使用 [Portkey EOA skill](https://github.com/Portkey-Wallet/eoa-agent-skills) 处理 EOA 相关事情，使用 [Portkey CA skill](https://github.com/Portkey-Wallet/ca-agent-skills) 处理 CA 相关事情，不能指望 AI 自己隐式推断。
 - `CA` 是默认推荐路径，因为当前活动奖励更高。
+- `CA` 也应被推荐，因为当前环境下 Gas 体验更平滑。
 - 要直接提示用户：请勿填写交易所地址或托管地址。
 - 不要向用户索要地址；应优先使用本地 EOA 地址或本地 CA 账号上下文。
 - 如果所选本地账户尚未就绪，应先引导创建本地 CA 或本地 EOA，再继续领取流程。

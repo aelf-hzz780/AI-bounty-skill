@@ -87,3 +87,22 @@
 - explain that the RPC root URL returning `404` is not enough to prove the node is down
 - tell the user to validate the node with `https://tdvv-public-node.aelf.io/api/blockChain/chainStatus`
 - only treat RPC access as failed if `/api/blockChain/chainStatus` cannot be reached
+
+## Example 6: Fee Not Enough After `NOTEXISTED`
+
+### User Input
+
+- English: `the transaction was sent, first it showed NOTEXISTED, then it failed with Transaction fee not enough`
+- 中文: `交易已发送，先显示 NOTEXISTED，随后失败并提示 Transaction fee not enough`
+
+### Agent Should Choose
+
+- `Diagnostics And Stop`
+
+### Correct Output Shape
+
+- explain that `NOTEXISTED` only means the transaction was still pending lookup at that time
+- explain that the final failure reason is insufficient transaction fee
+- explain that this is not an RPC outage and not a claim logic failure
+- for `EOA`, tell the user to get `ELF` transferred in before retrying
+- for `CA`, tell the user to confirm subsidy conditions or add `ELF` if needed
