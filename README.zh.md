@@ -2,6 +2,18 @@
 
 [English](./README.md)
 
+## 快速开始
+
+把下面这段直接发给你的 AI。先把邮箱占位符替换成自己的邮箱，不要填写交易所地址或托管地址。
+
+### 直接喂给 AI
+
+```text
+1. 请先阅读 https://github.com/aelf-hzz780/AI-bounty-skill/blob/main/SKILL.md，了解这个 skill，并把它安装到本地。
+2. 然后按这个 skill 的要求帮我 Claim，使用 AA/CA 方案。
+3. 使用 email：<替换成你自己的邮箱> 来 recover/login。
+```
+
 这是一个公开 skill 仓库，用于在 `aelf` 的 `tDVV` 主网侧链环境中，通过 `RewardClaimContract` 领取 AI bounty。
 
 对 AA/CA 来说，当前 skill 的标准 wallet 路径是 `manager signer -> CA.ManagerForwardCall -> reward.ClaimByPortkeyToCa(Hash ca_hash)`。

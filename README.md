@@ -2,6 +2,18 @@
 
 [中文](./README.zh.md)
 
+## Quick Start
+
+Send the prompt below to your AI. Replace the email placeholder with your own email first, and do not use an exchange or custodial address.
+
+### Prompt for Your AI
+
+```text
+1. Please read https://github.com/aelf-hzz780/AI-bounty-skill/blob/main/SKILL.md, understand this skill, and install it locally.
+2. Then help me claim by following the skill instructions, and use the AA/CA route.
+3. Use email: <replace-with-your-email> to recover/login.
+```
+
 This public repository contains a single skill for claiming the AI bounty on the `aelf` `tDVV` mainnet sidechain through `RewardClaimContract`.
 
 For AA/CA, the standard wallet claim path is `manager signer -> CA.ManagerForwardCall -> reward.ClaimByPortkeyToCa(Hash ca_hash)`.
