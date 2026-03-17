@@ -14,6 +14,46 @@
 3. 使用 email：<替换成你自己的邮箱> 来 recover/login。
 ```
 
+## 宿主快速入口
+
+只有当入口真正对应宿主原生的安装或发现机制时，才单独给它命名。当前这个仓库里，`Gemini CLI` 是唯一真正的一条命令安装；`OpenClaw` 和 `OpenCode` 走原生 workspace skill 发现；`Claude Code` 和 `Codex` 先走 bootstrap 安装文档。
+
+### Gemini CLI
+
+这个仓库现在带有 `gemini-extension.json` 和 `GEMINI.md`，所以 Gemini CLI 可以直接把它当扩展安装：
+
+```bash
+gemini extensions install https://github.com/aelf-hzz780/AI-bounty-skill
+```
+
+### OpenClaw
+
+这个仓库现在带有 workspace skill：`skills/ai-bounty-claim/SKILL.md`。把这个仓库作为 OpenClaw workspace 打开，并开启一个新 session 即可。
+
+### OpenCode
+
+这个仓库现在带有 project skill：`.opencode/skills/ai-bounty-claim/SKILL.md`。在 OpenCode 里打开这个仓库，并开启一个新 session 即可。
+
+### Claude Code
+
+把下面这句直接发给 Claude Code：
+
+```text
+Fetch and follow instructions from https://raw.githubusercontent.com/aelf-hzz780/AI-bounty-skill/main/.claude/INSTALL.md
+```
+
+### Codex
+
+把下面这句直接发给 Codex：
+
+```text
+Fetch and follow instructions from https://raw.githubusercontent.com/aelf-hzz780/AI-bounty-skill/main/.codex/INSTALL.md
+```
+
+### Cursor
+
+暂时还没有专用快速入口。先用上面的通用 Prompt；等这个仓库补上 `.cursor/rules` 或真实的 MCP 安装路径后，再增加 Cursor 专属入口。
+
 这是一个公开 skill 仓库，用于在 `aelf` 的 `tDVV` 主网侧链环境中，通过 `RewardClaimContract` 领取 AI bounty。
 
 对 AA/CA 来说，当前 skill 的标准 wallet 路径是 `manager signer -> CA.ManagerForwardCall -> reward.ClaimByPortkeyToCa(Hash ca_hash)`。

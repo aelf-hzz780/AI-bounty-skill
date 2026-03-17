@@ -14,6 +14,46 @@ Send the prompt below to your AI. Replace the email placeholder with your own em
 3. Use email: <replace-with-your-email> to recover/login.
 ```
 
+## Fast Paths by Host
+
+Use a host-specific entry only when it maps to a real native install or discovery path. In this repository today, `Gemini CLI` is the only true one-command install, `OpenClaw` and `OpenCode` use native workspace skill discovery, and `Claude Code` plus `Codex` use bootstrap install docs.
+
+### Gemini CLI
+
+This repository now ships `gemini-extension.json` and `GEMINI.md`, so Gemini CLI can install it as an extension:
+
+```bash
+gemini extensions install https://github.com/aelf-hzz780/AI-bounty-skill
+```
+
+### OpenClaw
+
+This repository now ships a workspace skill at `skills/ai-bounty-claim/SKILL.md`. Open this repo as your OpenClaw workspace and start a new session.
+
+### OpenCode
+
+This repository now ships a project skill at `.opencode/skills/ai-bounty-claim/SKILL.md`. Open the repo in OpenCode and start a new session.
+
+### Claude Code
+
+Tell Claude Code:
+
+```text
+Fetch and follow instructions from https://raw.githubusercontent.com/aelf-hzz780/AI-bounty-skill/main/.claude/INSTALL.md
+```
+
+### Codex
+
+Tell Codex:
+
+```text
+Fetch and follow instructions from https://raw.githubusercontent.com/aelf-hzz780/AI-bounty-skill/main/.codex/INSTALL.md
+```
+
+### Cursor
+
+No dedicated fast path yet. Use the universal prompt above for now. Add a Cursor-specific entry only after this repo has `.cursor/rules` or a real MCP install path.
+
 This public repository contains a single skill for claiming the AI bounty on the `aelf` `tDVV` mainnet sidechain through `RewardClaimContract`.
 
 For AA/CA, the standard wallet claim path is `manager signer -> CA.ManagerForwardCall -> reward.ClaimByPortkeyToCa(Hash ca_hash)`.
