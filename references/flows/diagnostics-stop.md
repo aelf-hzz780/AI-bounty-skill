@@ -8,9 +8,11 @@ Use this flow for any blocker that makes the signer or claim path invalid:
 
 - exchange address, custodial address, or no private key
 - user asks the agent to create or hold a wallet
-- user refuses to choose between `AA/CA` and `EOA`
+- user insists on the removed EOA route
 - `/api/blockChain/chainStatus` cannot be reached
-- the `EOA` path does not have enough transaction fee or available `ELF` before sending
+- the Portkey CA dependency is below `2.3.0` or lacks `manager-sync-status` / `portkey_manager_sync_status`
+- `manager-sync-status` returns `isManagerSynced=false`
+- `GetHolderInfo(caHash)` cannot resolve the holder on `tDVV`
 - the `AA/CA` standard wallet path already failed with `Transaction fee not enough`
 - write methods were misread from a view-only contract introspection result
 - a wrapped `ELF_..._tDVV` address was passed into an SDK or helper that expects a raw address
@@ -32,15 +34,40 @@ Use this flow for any blocker that makes the signer or claim path invalid:
 
 ### Exchange Or Custodial Address
 
-- Reason: `Claim()` requires a signer controlled by the user.
-- Next action: tell the user not to fill an exchange address and to use a local EOA address or a local recovered AA/CA account instead.
+- Reason: the public AA/CA claim path requires a user-controlled local Portkey account context.
+- Next action: tell the user not to fill an exchange address and to use a local recovered AA/CA account instead.
 - Hard stop: never offer to create or hold a wallet for the user.
+
+### EOA Route No Longer Supported
+
+- Reason: this public reward-claim skill no longer exposes the legacy EOA route, even if older contract source snapshots still contain legacy EOA methods.
+- Next action: tell the user to create, recover, or log in to a local Portkey AA/CA account, then continue with the AA/CA flow.
+- Hard stop: do not keep planning around `Claim()` or any EOA-only signer path.
 
 ### Mainnet AA/CA Exists But `tDVV` Lookup Fails
 
 - Reason: the bounty claim requires holder and `caHash` resolution on `tDVV`, not only on another network view.
 - Next action: ask the user to recover or re-establish the Portkey AA/CA context that is queryable on `tDVV`.
 - Hard stop: do not guess or fabricate `caHash`.
+
+### CA Dependency Too Old For AA/CA Claim
+
+- Reason: the AA/CA route now requires `@portkey/ca-agent-skills >= 2.3.0` because claim preflight depends on `manager-sync-status` or `portkey_manager_sync_status`.
+- Next action: ask the user or host to upgrade the Portkey CA skill, then retry the AA/CA path.
+- Hard stop: do not continue with AA/CA claim when the required sync-status interface is missing.
+
+### Manager Sync Not Ready
+
+- Reason: `manager-sync-status` returned `isManagerSynced=false`, so the manager context is not ready on `tDVV`.
+- Next action for a newly registered `tDVV` account: explain that the on-chain context is still syncing and the user should retry later.
+- Next action for an older account whose origin is `AELF` and write target is `tDVV`: explain that cross-chain sync to the sidechain can be slower and the user should wait for manager and holder sync to complete first.
+- Hard stop: do not send `ManagerForwardCall` and do not discuss fee as the blocker.
+
+### Holder Or Chain Context Not Ready
+
+- Reason: `GetHolderInfo(caHash)` could not resolve the holder on `tDVV`, or the chain returned `Holder is not found` / `CA holder not found`.
+- Next action: tell the user to wait for holder sync or re-check `caHash` and target chain.
+- Hard stop: do not infer a fee problem and do not suggest adding `ELF`.
 
 ### Guardian Already Exists And Recovery Is Required
 
@@ -56,12 +83,10 @@ Use this flow for any blocker that makes the signer or claim path invalid:
 
 ### Insufficient Transaction Fee
 
-- Reason: `EOA` does not have enough `ELF` before send, or the `AA/CA` standard wallet path already returned `Transaction fee not enough`.
-- Next action for `EOA`: tell the user to get `ELF` transferred in, either from another wallet or from an exchange withdrawal, before retrying `Claim()`.
-- Next action for `EOA` if getting `ELF` is not feasible: recommend switching to `AA/CA`, remind them that `AA/CA` gets `2 AIBOUNTY` in the current campaign, and repeat that `AA/CA` has a smoother gas experience in the current environment.
-- Next action for `AA/CA`: explain that one AA/CA attempt was allowed because subsidy may apply, but the actual chain result still shows fee was not enough; ask the user to wait for the subsidy window to refresh or add `ELF` before retrying.
+- Reason: the `AA/CA` standard wallet path already returned the final chain error `Transaction fee not enough`.
+- Next action for `AA/CA`: explain that one AA/CA attempt was allowed because subsidy may apply, but the final chain result still shows fee was not enough; ask the user to wait for the subsidy window to refresh or add `ELF` before retrying.
 - If a failed or pending transaction already has a `txId`, include the `txId` and `https://aelfscan.io/tDVV/tx/<txid>` in the stop response.
-- Hard stop: do not misclassify `Transaction fee not enough` as an RPC failure or a claim logic failure.
+- Hard stop: do not misclassify `Transaction fee not enough` as an RPC failure, a claim logic failure, or a holder lookup failure.
 
 ### Transaction Status Still Pending
 
@@ -77,7 +102,7 @@ Use this flow for any blocker that makes the signer or claim path invalid:
 
 ### Methods Misread From View-Only API
 
-- Reason: `/api/contract/contractViewMethodList` only exposes view methods and cannot be used to conclude that `Claim()` or `ClaimByPortkeyToCa(Hash ca_hash)` does not exist.
+- Reason: `/api/contract/contractViewMethodList` only exposes view methods and cannot be used to conclude that `ClaimByPortkeyToCa(Hash ca_hash)` does not exist.
 - Next action: if full method verification is still needed, use `/api/blockChain/contractFileDescriptorSet` as an optional verification path and normalize the contract address into the endpoint's accepted format first.
 - Hard stop: if introspection stays ambiguous or returns `Not found` because of address format issues, keep the canonical reward contract address and supported methods defined in this skill instead of redirecting to a different contract.
 
@@ -102,19 +127,21 @@ Use this flow for any blocker that makes the signer or claim path invalid:
 ## AA/CA Troubleshooting Notes
 
 - The standard AA/CA wallet path in this skill is `ManagerForwardCall(...) -> ClaimByPortkeyToCa(Hash ca_hash)`.
+- The AA/CA route now requires this fixed read-only gate before any send: resolve local AA/CA context and `caHash`, confirm `manager-sync-status`, confirm `GetHolderInfo(caHash)`.
 - `ClaimByPortkeyToCa(Hash ca_hash)` is permissionless at the reward method layer, but the forwarded reward still goes to the resolved AA/CA address rather than the manager signer.
-- Do not stop AA/CA before the first standard-path attempt only because visible `ELF` is zero.
+- Do not stop AA/CA before the first standard-path attempt only because visible `ELF` is zero when the fixed read-only gate is already green.
+- Do not suggest adding `ELF` for `Holder is not found`, `CA holder not found`, or any failed holder lookup.
 - The `ClaimByPortkeyToCa` input must be `.aelf.Hash`, not `string`.
 - `NOTEXISTED` only means the transaction is not confirmed yet; it is not a final result.
 - A successful AA/CA claim often emits `PortkeyClaimedToCa` and `Transferred`. If the request was wrapped through `ManagerForwardCall`, additional events such as `VirtualTransactionCreated` may also appear.
 
 ## Error Mapping
 
-- `CA holder not found.` -> `caHash` is missing or not valid on `tDVV`
-- `Sender is not a manager of the CA holder.` -> the local AA/CA manager context is not ready on `tDVV`; recover or re-login and do not lead with the raw manager error text
-- `Address has already claimed.` -> the EOA path is already consumed
+- `Holder is not found` -> holder, `caHash`, or target-chain context is not ready on `tDVV`
+- `CA holder not found.` -> holder, `caHash`, or target-chain context is not ready on `tDVV`
+- `Sender is not a manager of the CA holder.` -> the local AA/CA manager context is not ready on `tDVV`, or the current local manager is not valid for the target holder; recover or re-login and do not lead with the raw manager error text
 - `CA hash has already claimed.` -> the AA/CA path is already consumed
-- `Transaction fee not enough.` -> the signer has insufficient fee balance or no usable gas subsidy
+- `Transaction fee not enough.` -> the signer has insufficient fee balance or no usable gas subsidy during the send stage
 - `NOTEXISTED` -> the transaction is still pending lookup and must be checked again
 
 ## Output Shape

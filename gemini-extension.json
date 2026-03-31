@@ -1,6 +1,6 @@
 {
   "name": "ai-bounty-claim",
-  "version": "2.10.0",
-  "description": "Claim the AI bounty on tDVV with the canonical repo skill and AA/CA-first routing.",
+  "version": "3.0.0",
+  "description": "Claim the AI bounty on tDVV with AA/CA-only routing, sync-gated preflight, and canonical repo skill rules.",
   "contextFileName": "GEMINI.md"
 }
