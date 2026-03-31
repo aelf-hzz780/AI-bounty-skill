@@ -13,9 +13,9 @@
 
 ### Correct Output Shape
 
-- explain that `Claim()` requires a user-controlled signer
+- explain that the public bounty path requires a user-controlled Portkey AA/CA context
 - explain that an OKX deposit address does not provide the private key
-- tell the user directly not to fill exchange addresses and to use a local EOA address or local recovered AA/CA account instead
+- tell the user directly not to fill exchange addresses and to use a local recovered AA/CA account instead
 - stop without offering wallet creation
 
 ## Example 2: Mainnet AA/CA Exists But `tDVV` Fails
@@ -53,12 +53,48 @@
 - tell the user to finish the recovery flow first
 - stop without calling the contract
 
-## Example 4: `caHash` Not Found On `tDVV`
+## Example 4: Newly Registered `tDVV` Account Is Still Syncing
 
 ### User Input
 
-- English: `the contract returned CA holder not found.`
-- 中文: `合约报错 CA holder not found.`
+- English: `I just registered on tDVV and now holder lookup still fails`
+- 中文: `我刚在 tDVV 注册，现在 holder lookup 还是失败。`
+
+### Agent Should Choose
+
+- `Diagnostics And Stop`
+
+### Correct Output Shape
+
+- explain that the on-chain AA/CA context is still syncing
+- explain that this is a holder or chain-context readiness problem, not a fee problem
+- tell the user to wait and retry later
+- explicitly avoid suggesting `ELF` top-up
+
+## Example 5: Old `AELF` Account Manager Not Synced To `tDVV`
+
+### User Input
+
+- English: `my old AELF account is ready, but manager-sync-status on tDVV is false`
+- 中文: `我的老 AELF 账号已经有了，但 tDVV 上 manager-sync-status 是 false。`
+
+### Agent Should Choose
+
+- `Diagnostics And Stop`
+
+### Correct Output Shape
+
+- explain that cross-chain sync to the sidechain may still be in progress
+- explain that the current blocker is manager sync, not transaction fee
+- tell the user to wait for manager and holder sync to complete, or re-login later
+- stop without sending `ManagerForwardCall`
+
+## Example 6: `Holder is not found`
+
+### User Input
+
+- English: `the contract returned Holder is not found`
+- 中文: `合约返回 Holder is not found`
 
 ### Agent Should Choose
 
@@ -67,28 +103,11 @@
 ### Correct Output Shape
 
 - repeat the exact chain error
-- explain that the current `caHash` cannot be resolved on `tDVV`
-- tell the user to re-check or re-resolve the target `caHash`
-- stop without retrying blindly
+- explain that the holder, `caHash`, or target-chain context is not ready on `tDVV`
+- tell the user to wait for sync or re-check `caHash` and chain
+- stop without suggesting `ELF`
 
-## Example 5: RPC Root Returns 404
-
-### User Input
-
-- English: `the RPC root URL returns 404, so the tDVV node must be down`
-- 中文: `tdvv-public-node.aelf.io 直接访问是 404，所以节点应该挂了`
-
-### Agent Should Choose
-
-- `Diagnostics And Stop`
-
-### Correct Output Shape
-
-- explain that the RPC root URL returning `404` is not enough to prove the node is down
-- tell the user to validate the node with `https://tdvv-public-node.aelf.io/api/blockChain/chainStatus`
-- only treat RPC access as failed if `/api/blockChain/chainStatus` cannot be reached
-
-## Example 6: Fee Not Enough After `NOTEXISTED`
+## Example 7: Fee Not Enough After `NOTEXISTED`
 
 ### User Input
 
@@ -102,14 +121,12 @@
 ### Correct Output Shape
 
 - explain that `NOTEXISTED` only means the transaction was still pending lookup at that time
-- explain that the final failure reason is insufficient transaction fee
-- explain that this is not an RPC outage and not a claim logic failure
-- for `EOA`, tell the user to get `ELF` transferred in before retrying
-- for `EOA`, if getting `ELF` is not feasible, recommend switching to `AA/CA`
-- for `AA/CA`, explain that one AA/CA attempt was allowed because subsidy may apply, but the actual chain result still shows fee was not enough
+- explain that the final failure reason is insufficient transaction fee during transaction sending
+- explain that this is not an RPC outage, not a claim logic failure, and not a holder lookup failure
+- for `AA/CA`, explain that one AA/CA attempt was allowed because subsidy may apply, but the final chain result still shows fee was not enough
 - if a `txId` is already known, include `txId` and `https://aelfscan.io/tDVV/tx/<txid>`
 
-## Example 7: View-Only API Misread As Full Method List
+## Example 8: View-Only API Misread As Full Method List
 
 ### User Input
 
@@ -123,12 +140,12 @@
 ### Correct Output Shape
 
 - explain that `/api/contract/contractViewMethodList` is a view-only list and cannot be used to deny write methods
-- explain that seeing only read methods does not prove `Claim()` or `ClaimByPortkeyToCa(Hash ca_hash)` is missing
+- explain that seeing only read methods does not prove `ClaimByPortkeyToCa(Hash ca_hash)` is missing
 - if full method verification is still needed, tell the user to use `/api/blockChain/contractFileDescriptorSet` as an optional verification path
 - explain that node introspection must use the normalized contract address format, not the wrapped `ELF_..._tDVV` address string
 - tell the user to keep the canonical reward contract and supported write methods already defined by the skill unless a verified source disproves them
 
-## Example 8: Reward Still Goes To The AA/CA Address
+## Example 9: Reward Still Goes To The AA/CA Address
 
 ### User Input
 
@@ -146,7 +163,7 @@
 - tell the user to verify the target `caHash` and local AA/CA context instead of focusing on sender payout
 - stop if the user still cannot provide or resolve the correct `caHash`
 
-## Example 9: Wrapped Address And Wrong `caHash` Encoding
+## Example 10: Wrapped Address And Wrong `caHash` Encoding
 
 ### User Input
 
@@ -163,3 +180,21 @@
 - explain that `ClaimByPortkeyToCa` expects `.aelf.Hash`, not a plain string
 - tell the user to encode the forwarded args as `args: { value: Buffer.from(caHash, "hex") }`
 - if descriptor-based encoding is involved, remind the user to call `root.resolveAll()` before resolving the method or encoding params
+
+## Example 11: User Still Wants EOA
+
+### User Input
+
+- English: `I still want to claim with an EOA wallet.`
+- 中文: `我还是想用 EOA 钱包来领。`
+
+### Agent Should Choose
+
+- `Diagnostics And Stop`
+
+### Correct Output Shape
+
+- explain that this public reward-claim skill no longer supports the legacy EOA route
+- explain that older contract source snapshots may still show legacy methods, but they are not exposed as supported public user paths here
+- tell the user to create, recover, or log in to a local Portkey AA/CA account first
+- stop without planning around `Claim()`
