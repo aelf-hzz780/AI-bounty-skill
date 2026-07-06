@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/aelf-hzz780-ai-bounty-skill-badge.png)](https://mseep.ai/app/aelf-hzz780-ai-bounty-skill)
+
 # AI Bounty Claim Skill
 
 [中文](./README.zh.md)
